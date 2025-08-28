@@ -16,7 +16,7 @@ class BookingController extends Controller
      */
     public function index()
     {
-        $tickets = Ticket::with(['movie', 'cinema', 'studio', 'city'])
+        $tickets = Ticket::with(['movie', 'cinema', 'studio', 'city', 'seats'])
             ->where('date', '>=', today())
             ->orderBy('date')
             ->orderBy('time')

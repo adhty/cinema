@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Storage;
 
 class Cinema extends Model
@@ -14,19 +17,43 @@ class Cinema extends Model
         'image'
     ];
 
-    public function city()
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    protected $appends = ['image_url'];
+
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
-    public function studios()
+    public function studios(): HasMany
     {
         return $this->hasMany(Studio::class);
     }
 
-    // Accessor untuk gambar
-    public function getImageUrlAttribute()
+    public function tickets(): HasManyThrough
     {
-        return $this->image ? Storage::url($this->image) : asset('test-image.jpg');
+        return $this->hasManyThrough(Ticket::class, Studio::class);
+    }
+
+    // Accessor untuk gambar
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image ? Storage::url($this->image) : null;
+    }
+
+    // Scope untuk filter berdasarkan kota
+    public function scopeInCity($query, $cityId)
+    {
+        return $query->where('city_id', $cityId);
+    }
+
+    // Scope untuk cinema yang memiliki studio
+    public function scopeWithStudios($query)
+    {
+        return $query->has('studios');
     }
 }

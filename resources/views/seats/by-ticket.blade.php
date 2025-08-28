@@ -63,7 +63,7 @@
         </div>
         <div class="card-body">
             <div class="text-center mb-4">
-                <div class="bg-dark text-white p-2 rounded" style="display: inline-block;">
+                <div class="bg-dark text-white p-2 rounded d-inline-block">
                     🎬 SCREEN
                 </div>
             </div>

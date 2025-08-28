@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="text-center mb-4">
-        <h2>🪑 Select Your Seat</h2>
+        <h2> Select Your Seat</h2>
         <p class="lead">{{ $ticket->movie->title ?? 'Movie' }}</p>
     </div>
 
@@ -32,7 +32,7 @@
 
     <!-- Screen -->
     <div class="text-center mb-4">
-        <div class="screen">
+        <div class="bg-dark text-white p-3 rounded d-inline-block fw-bold shadow">
             🎬 SCREEN
         </div>
     </div>
@@ -49,15 +49,17 @@
                         <div class="d-flex justify-content-center flex-wrap gap-2">
                             @foreach($rowSeats->sortBy('number') as $seat)
                                 @if($seat->isAvailable())
-                                    <button class="seat-btn available" 
+                                    <button class="btn btn-outline-success btn-sm seat-btn"
                                             onclick="selectSeat({{ $seat->id }}, '{{ $seat->number }}', {{ $ticket->price }})"
                                             data-seat-id="{{ $seat->id }}"
-                                            data-seat-number="{{ $seat->number }}">
+                                            data-seat-number="{{ $seat->number }}"
+                                            style="width: 45px; height: 40px; font-size: 12px;">
                                         {{ $seat->number }}
                                     </button>
                                 @else
-                                    <button class="seat-btn booked" disabled 
-                                            title="Booked by {{ $seat->order->user->name ?? 'Unknown' }}">
+                                    <button class="btn btn-outline-danger btn-sm" disabled
+                                            title="Booked by {{ $seat->order->user->name ?? 'Unknown' }}"
+                                            style="width: 45px; height: 40px; font-size: 12px;">
                                         {{ $seat->number }}
                                     </button>
                                 @endif
@@ -70,19 +72,19 @@
     </div>
 
     <!-- Legend -->
-    <div class="legend mb-4">
-        <div class="row justify-content-center">
-            <div class="col-auto">
-                <button class="seat-btn available" disabled></button>
-                <small>Available</small>
+    <div class="text-center mb-4">
+        <div class="row justify-content-center g-3">
+            <div class="col-auto d-flex align-items-center">
+                <button class="btn btn-outline-success btn-sm" disabled style="width: 30px; height: 25px; font-size: 10px;"></button>
+                <span class="ms-2">Available</span>
             </div>
-            <div class="col-auto">
-                <button class="seat-btn selected" disabled></button>
-                <small>Selected</small>
+            <div class="col-auto d-flex align-items-center">
+                <button class="btn btn-primary btn-sm" disabled style="width: 30px; height: 25px; font-size: 10px;"></button>
+                <span class="ms-2">Selected</span>
             </div>
-            <div class="col-auto">
-                <button class="seat-btn booked" disabled></button>
-                <small>Booked</small>
+            <div class="col-auto d-flex align-items-center">
+                <button class="btn btn-outline-danger btn-sm" disabled style="width: 30px; height: 25px; font-size: 10px;"></button>
+                <span class="ms-2">Booked</span>
             </div>
         </div>
     </div>
@@ -119,21 +121,23 @@ let selectedPrice = 0;
 
 function selectSeat(seatId, seatNumber, price) {
     // Remove previous selection
-    document.querySelectorAll('.seat-btn.selected').forEach(btn => {
-        btn.classList.remove('selected');
-        btn.classList.add('available');
+    document.querySelectorAll('.seat-btn').forEach(btn => {
+        if (btn.classList.contains('btn-primary')) {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-success');
+        }
     });
-    
+
     // Add selection to clicked seat
     const seatBtn = document.querySelector(`[data-seat-id="${seatId}"]`);
-    seatBtn.classList.remove('available');
-    seatBtn.classList.add('selected');
-    
+    seatBtn.classList.remove('btn-outline-success');
+    seatBtn.classList.add('btn-primary');
+
     // Update selection data
     selectedSeatId = seatId;
     selectedSeatNumber = seatNumber;
     selectedPrice = price;
-    
+
     // Update summary
     document.getElementById('selected-seat-number').textContent = seatNumber;
     document.getElementById('selected-price').textContent = 'Rp ' + price.toLocaleString('id-ID');
@@ -148,17 +152,6 @@ function proceedToBooking() {
 </script>
 
 <style>
-.screen {
-    background: linear-gradient(to bottom, #333, #666);
-    color: white;
-    padding: 15px 50px;
-    border-radius: 50px;
-    display: inline-block;
-    font-weight: bold;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
 .seat-map-container {
     max-width: 800px;
     margin: 0 auto;
@@ -167,58 +160,12 @@ function proceedToBooking() {
 .row-label {
     font-size: 1.2em;
     color: #666;
-}
-
-.seat-btn {
-    width: 45px;
-    height: 40px;
-    border: 2px solid;
-    border-radius: 8px;
-    font-size: 12px;
     font-weight: bold;
-    cursor: pointer;
+}
+
+.seat-btn:hover:not(:disabled) {
+    transform: scale(1.05);
     transition: all 0.2s;
-}
-
-.seat-btn.available {
-    background-color: #e8f5e8;
-    border-color: #28a745;
-    color: #28a745;
-}
-
-.seat-btn.available:hover {
-    background-color: #28a745;
-    color: white;
-    transform: scale(1.1);
-}
-
-.seat-btn.selected {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: white;
-    transform: scale(1.1);
-}
-
-.seat-btn.booked {
-    background-color: #f8d7da;
-    border-color: #dc3545;
-    color: #dc3545;
-    cursor: not-allowed;
-}
-
-.legend {
-    text-align: center;
-}
-
-.legend .col-auto {
-    margin: 0 15px;
-}
-
-.legend .seat-btn {
-    width: 30px;
-    height: 25px;
-    margin-right: 5px;
-    font-size: 10px;
 }
 
 #selection-summary {

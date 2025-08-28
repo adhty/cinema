@@ -64,7 +64,7 @@ class TestDataSeeder extends Seeder
         $movie = Movie::create([
             'title' => 'Avengers: Endgame',
             'duration' => 180,
-            'age' => '13+',
+            'age' => 13,
             'animation_type' => '2D',
             'trailer' => 'https://youtube.com/watch?v=example',
             'start_showing' => '2024-01-01',

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Actor;
 use App\Models\Movie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
-class ActorController extends Controller
+class ActorController extends BaseController
 {
     /**
      * Display a listing of the resource.

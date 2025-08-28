@@ -2,110 +2,114 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Movie;
 use App\Models\Actor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
-class MovieController extends Controller
+class MovieController extends BaseController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function index()
     {
-        $movies = Movie::with('actors')->get();
-        return $this->respondWithSuccess($movies);
+        try {
+            $movies = Movie::with('actors')->orderBy('title')->get();
+            return $this->success(['movies' => $movies], 'Movies retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve movies', 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'duration' => 'required|integer|min:1',
-            'age' => 'required|integer|min:0',
-            'animation_type' => 'nullable|string|max:255',
-            'trailer' => 'nullable|string|max:255',
-            'start_showing' => 'nullable|date',
-            'start_selling' => 'nullable|date',
-            'synopsis' => 'nullable|string',
-            'producer' => 'nullable|string|max:255',
-            'director' => 'nullable|string|max:255',
-            'writer' => 'nullable|string|max:255',
-            'production' => 'nullable|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'duration' => 'required|integer|min:1',
+                'age' => 'required|integer|min:0',
+                'animation_type' => 'nullable|string|max:255',
+                'trailer' => 'nullable|url',
+                'start_showing' => 'nullable|date',
+                'start_selling' => 'nullable|date',
+                'synopsis' => 'nullable|string',
+                'producer' => 'nullable|string|max:255',
+                'director' => 'nullable|string|max:255',
+                'writer' => 'nullable|string|max:255',
+                'production' => 'nullable|string|max:255',
+            ]);
 
-        $movie = Movie::create($data);
+            $movie = Movie::create($validated);
 
-        return $this->respondWithSuccess($movie, 201);
+            return $this->success(['movie' => $movie], 'Movie created successfully', 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->validationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->error('Failed to create movie', 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Movie  $movie
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function show(Movie $movie)
     {
-        $movie->load('actors');
-        return $this->respondWithSuccess($movie);
+        try {
+            $movie->load('actors');
+            return $this->success(['movie' => $movie], 'Movie retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve movie', 500);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Movie  $movie
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function update(Request $request, Movie $movie)
     {
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'duration' => 'required|integer|min:1',
-            'age' => 'required|integer|min:0',
-            'animation_type' => 'nullable|string|max:255',
-            'trailer' => 'nullable|string|max:255',
-            'start_showing' => 'nullable|date',
-            'start_selling' => 'nullable|date',
-            'synopsis' => 'nullable|string',
-            'producer' => 'nullable|string|max:255',
-            'director' => 'nullable|string|max:255',
-            'writer' => 'nullable|string|max:255',
-            'production' => 'nullable|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'duration' => 'required|integer|min:1',
+                'age' => 'required|integer|min:0',
+                'animation_type' => 'nullable|string|max:255',
+                'trailer' => 'nullable|url',
+                'start_showing' => 'nullable|date',
+                'start_selling' => 'nullable|date',
+                'synopsis' => 'nullable|string',
+                'producer' => 'nullable|string|max:255',
+                'director' => 'nullable|string|max:255',
+                'writer' => 'nullable|string|max:255',
+                'production' => 'nullable|string|max:255',
+            ]);
 
-        $movie->update($data);
+            $movie->update($validated);
 
-        return $this->respondWithSuccess($movie);
+            return $this->success(['movie' => $movie], 'Movie updated successfully');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->validationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->error('Failed to update movie', 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Movie  $movie
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy(Movie $movie)
     {
-        // Delete actor photos before deleting the movie
-        foreach ($movie->actors as $actor) {
-            if ($actor->photo) {
-                Storage::disk('public')->delete($actor->photo);
+        try {
+            DB::beginTransaction();
+
+            // Delete actor photos before deleting the movie
+            foreach ($movie->actors as $actor) {
+                if ($actor->photo && Storage::disk('public')->exists($actor->photo)) {
+                    Storage::disk('public')->delete($actor->photo);
+                }
             }
+
+            $movie->delete();
+
+            DB::commit();
+
+            return response()->json(null, 204);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->error('Failed to delete movie', 500);
         }
-
-        $movie->delete();
-
-        return $this->respondWithSuccess(null, 204);
     }
 }

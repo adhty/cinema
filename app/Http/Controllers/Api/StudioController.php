@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Studio;
 use App\Models\Cinema;
 use App\Models\CinemaPrice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-class StudioController extends Controller
+class StudioController extends BaseController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function index()
     {
-        $studios = Studio::with(['cinema','cinemaPrice'])->get();
-        return $this->respondWithSuccess($studios);
+        try {
+            $studios = Studio::with(['cinema', 'cinemaPrice'])->orderBy('name')->get();
+            return $this->success(['studios' => $studios], 'Studios retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to retrieve studios', 500);
+        }
     }
 
     /**

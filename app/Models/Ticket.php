@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Ticket extends Model
 {
@@ -14,31 +17,38 @@ class Ticket extends Model
         'date' => 'date',
         'time' => 'datetime:H:i',
         'price' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    public function movie()
+    public function movie(): BelongsTo
     {
         return $this->belongsTo(Movie::class);
     }
 
-    public function studio()
+    public function studio(): BelongsTo
     {
         return $this->belongsTo(Studio::class);
     }
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }
 
-    public function cinema()
+    public function cinema(): BelongsTo
     {
         return $this->belongsTo(Cinema::class);
     }
 
-    public function seats()
+    public function seats(): HasMany
     {
         return $this->hasMany(Seats::class);
+    }
+
+    public function orders(): HasManyThrough
+    {
+        return $this->hasManyThrough(Order::class, Seats::class, 'ticket_id', 'seat_id');
     }
 
     // Scope for upcoming shows
@@ -51,5 +61,25 @@ class Ticket extends Model
     public function scopeToday($query)
     {
         return $query->where('date', today());
+    }
+
+    // Scope for available tickets (with available seats)
+    public function scopeAvailable($query)
+    {
+        return $query->whereHas('seats', function($q) {
+            $q->where('status', 'available');
+        });
+    }
+
+    // Accessor untuk format waktu yang lebih readable
+    public function getFormattedTimeAttribute(): string
+    {
+        return $this->time->format('H:i');
+    }
+
+    // Accessor untuk menghitung seat yang tersedia
+    public function getAvailableSeatsCountAttribute(): int
+    {
+        return $this->seats()->where('status', 'available')->count();
     }
 }

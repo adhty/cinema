@@ -1,22 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>🪑 Seats Management</h2>
+        <h1>🪑 Seats Management</h1>
     </div>
 
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('seats.index') }}" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <label for="ticket_id" class="form-label">Filter by Ticket</label>
                     <select name="ticket_id" id="ticket_id" class="form-select">
                         <option value="">All Tickets</option>
                         @foreach($tickets as $ticket)
                             <option value="{{ $ticket->id }}" {{ request('ticket_id') == $ticket->id ? 'selected' : '' }}>
-                                {{ $ticket->movie->title ?? 'N/A' }} - {{ $ticket->cinema->name ?? 'N/A' }} 
+                                {{ $ticket->movie->title ?? 'N/A' }} - {{ $ticket->cinema->name ?? 'N/A' }}
                                 ({{ $ticket->date }} {{ $ticket->time }})
                             </option>
                         @endforeach
@@ -30,8 +30,8 @@
                         <option value="booked" {{ request('status') == 'booked' ? 'selected' : '' }}>Booked</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Filter</button>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
                     <a href="{{ route('seats.index') }}" class="btn btn-secondary">Reset</a>
                 </div>
             </form>
@@ -40,27 +40,27 @@
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-primary text-white">
                 <div class="card-body">
-                    <h5>Total Seats</h5>
-                    <h3>{{ $seats->total() }}</h3>
+                    <h5 class="card-title">Total Seats</h5>
+                    <h3 class="card-text">{{ $seats->total() }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-success text-white">
                 <div class="card-body">
-                    <h5>Available</h5>
-                    <h3>{{ $seats->where('status', 'available')->count() }}</h3>
+                    <h5 class="card-title">Available</h5>
+                    <h3 class="card-text">{{ $seats->where('status', 'available')->count() }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-danger text-white">
                 <div class="card-body">
-                    <h5>Booked</h5>
-                    <h3>{{ $seats->where('status', 'booked')->count() }}</h3>
+                    <h5 class="card-title">Booked</h5>
+                    <h3 class="card-text">{{ $seats->where('status', 'booked')->count() }}</h3>
                 </div>
             </div>
         </div>
@@ -69,13 +69,13 @@
     <!-- Seats Table -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Seats List</h5>
+            <h5 class="card-title mb-0">Seats List</h5>
         </div>
         <div class="card-body">
             @if($seats->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Seat Number</th>
@@ -90,14 +90,14 @@
                         <tbody>
                             @foreach($seats as $seat)
                                 <tr>
-                                    <td>{{ $seat->id }}</td>
+                                    <td><strong>{{ $seat->id }}</strong></td>
                                     <td>
                                         <span class="badge bg-secondary">{{ $seat->number }}</span>
                                     </td>
                                     <td>{{ $seat->ticket->movie->title ?? 'N/A' }}</td>
                                     <td>{{ $seat->ticket->cinema->name ?? 'N/A' }}</td>
                                     <td>
-                                        {{ $seat->ticket->date ?? 'N/A' }}<br>
+                                        <div>{{ $seat->ticket->date ?? 'N/A' }}</div>
                                         <small class="text-muted">{{ $seat->ticket->time ?? 'N/A' }}</small>
                                     </td>
                                     <td>
@@ -109,9 +109,10 @@
                                     </td>
                                     <td>
                                         @if($seat->order)
-                                            <strong>{{ $seat->order->user->name ?? 'N/A' }}</strong><br>
-                                            <small class="text-muted">{{ $seat->order->user->email ?? 'N/A' }}</small><br>
-                                            <span class="badge bg-{{ $seat->order->payment === 'paid' ? 'success' : ($seat->order->payment === 'pending' ? 'warning' : 'secondary') }}">
+                                            <div><strong>{{ $seat->order->user->name ?? 'N/A' }}</strong></div>
+                                            <small class="text-muted">{{ $seat->order->user->email ?? 'N/A' }}</small>
+                                            <br>
+                                            <span class="badge {{ $seat->order->payment === 'paid' ? 'bg-success' : ($seat->order->payment === 'pending' ? 'bg-warning' : 'bg-secondary') }}">
                                                 {{ ucfirst($seat->order->payment) }}
                                             </span>
                                         @else
@@ -131,7 +132,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="d-flex justify-content-center">
+                <div class="d-flex justify-content-center mt-3">
                     {{ $seats->appends(request()->query())->links() }}
                 </div>
             @else

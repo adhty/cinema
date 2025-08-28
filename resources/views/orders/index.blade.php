@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📋 Orders Management</h2>
+        <h1>📋 Orders Management</h1>
     </div>
 
     <!-- Filters -->
@@ -21,7 +21,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label for="payment" class="form-label">Filter by Payment</label>
                     <select name="payment" id="payment" class="form-select">
                         <option value="">All Status</option>
@@ -30,8 +30,8 @@
                         <option value="cancelled" {{ request('payment') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Filter</button>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
                     <a href="{{ route('orders.index') }}" class="btn btn-secondary">Reset</a>
                 </div>
             </form>
@@ -43,32 +43,32 @@
         <div class="col-md-3">
             <div class="card bg-primary text-white">
                 <div class="card-body">
-                    <h5>Total Orders</h5>
-                    <h3>{{ $orders->total() }}</h3>
+                    <h5 class="card-title">Total Orders</h5>
+                    <h3 class="card-text">{{ $orders->total() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card bg-warning text-white">
                 <div class="card-body">
-                    <h5>Pending</h5>
-                    <h3>{{ $orders->where('payment', 'pending')->count() }}</h3>
+                    <h5 class="card-title">Pending</h5>
+                    <h3 class="card-text">{{ $orders->where('payment', 'pending')->count() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body">
-                    <h5>Paid</h5>
-                    <h3>{{ $orders->where('payment', 'paid')->count() }}</h3>
+                    <h5 class="card-title">Paid</h5>
+                    <h3 class="card-text">{{ $orders->where('payment', 'paid')->count() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card bg-secondary text-white">
                 <div class="card-body">
-                    <h5>Cancelled</h5>
-                    <h3>{{ $orders->where('payment', 'cancelled')->count() }}</h3>
+                    <h5 class="card-title">Cancelled</h5>
+                    <h3 class="card-text">{{ $orders->where('payment', 'cancelled')->count() }}</h3>
                 </div>
             </div>
         </div>
@@ -77,13 +77,13 @@
     <!-- Orders Table -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Orders List</h5>
+            <h5 class="card-title mb-0">Orders List</h5>
         </div>
         <div class="card-body">
             @if($orders->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Customer</th>
@@ -97,37 +97,49 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($orders as $order)
-                                <tr>
-                                    <td>{{ $order->id }}</td>
-                                    <td>
-                                        <strong>{{ $order->user->name ?? 'N/A' }}</strong><br>
-                                        <small class="text-muted">{{ $order->user->email ?? 'N/A' }}</small>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ $order->id }}</div>
                                     </td>
-                                    <td>{{ $order->seat->ticket->movie->title ?? 'N/A' }}</td>
-                                    <td>{{ $order->seat->ticket->cinema->name ?? 'N/A' }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ $order->seat->number ?? 'N/A' }}</span>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ $order->user->name ?? 'N/A' }}</div>
+                                        <div class="text-sm text-gray-500">{{ $order->user->email ?? 'N/A' }}</div>
                                     </td>
-                                    <td>
-                                        {{ $order->seat->ticket->date ?? 'N/A' }}<br>
-                                        <small class="text-muted">{{ $order->seat->ticket->time ?? 'N/A' }}</small>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $order->seat->ticket->movie->title ?? 'N/A' }}</div>
                                     </td>
-                                    <td>Rp {{ number_format($order->seat->ticket->price ?? 0, 0, ',', '.') }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $order->payment === 'paid' ? 'success' : ($order->payment === 'pending' ? 'warning' : 'secondary') }}">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $order->seat->ticket->cinema->name ?? 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ $order->seat->number ?? 'N/A' }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $order->seat->ticket->date ?? 'N/A' }}</div>
+                                        <div class="text-sm text-gray-500">{{ $order->seat->ticket->time ?? 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Rp {{ number_format($order->seat->ticket->price ?? 0, 0, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {{ $order->payment === 'paid' ? 'bg-green-100 text-green-800' :
+                                               ($order->payment === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
                                             {{ ucfirst($order->payment) }}
                                         </span>
                                     </td>
-                                    <td>{{ $order->created_at->format('d M Y H:i') }}</td>
-                                    <td>
-                                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info">View</a>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $order->created_at->format('d M Y H:i') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <a href="{{ route('orders.show', $order->id) }}" class="text-blue-600 hover:text-blue-900">View</a>
                                         @if($order->payment === 'pending')
-                                            <form method="POST" action="{{ route('orders.cancel', $order->id) }}" style="display: inline;">
+                                            <form method="POST" action="{{ route('orders.cancel', $order->id) }}" class="inline">
                                                 @csrf
                                                 @method('PUT')
-                                                <button type="submit" class="btn btn-sm btn-warning"
+                                                <button type="submit" class="text-yellow-600 hover:text-yellow-900"
                                                         onclick="return confirm('Are you sure you want to cancel this order?')">
                                                     Cancel
                                                 </button>
@@ -141,12 +153,12 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="d-flex justify-content-center">
+                <div class="mt-6 flex justify-center">
                     {{ $orders->appends(request()->query())->links() }}
                 </div>
             @else
-                <div class="text-center py-4">
-                    <p class="text-muted">No orders found.</p>
+                <div class="text-center py-8">
+                    <p class="text-gray-500">No orders found.</p>
                 </div>
             @endif
         </div>

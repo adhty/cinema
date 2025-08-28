@@ -7,6 +7,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 abstract class Controller extends BaseController
 {
@@ -14,29 +15,43 @@ abstract class Controller extends BaseController
 
     /**
      * Check if the request expects JSON response
-     *
-     * @param Request $request
-     * @return bool
      */
-    protected function isApiRequest(Request $request)
+    protected function isApiRequest(Request $request): bool
     {
         return $request->expectsJson() || $request->is('api/*');
     }
 
     /**
-     * Return appropriate response based on request type
-     *
-     * @param Request $request
-     * @param mixed $data
-     * @param string|null $view
-     * @param array $viewData
-     * @param int $statusCode
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
+     * Return success response for API
      */
-    protected function respond(Request $request, $data = null, $view = null, $viewData = [], $statusCode = 200)
+    protected function successResponse(array $data = [], string $message = 'Success', int $statusCode = 200): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data
+        ], $statusCode);
+    }
+
+    /**
+     * Return error response for API
+     */
+    protected function errorResponse(string $message = 'Error', int $statusCode = 400, array $errors = []): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors
+        ], $statusCode);
+    }
+
+    /**
+     * Return appropriate response based on request type
+     */
+    protected function respond(Request $request, $data = null, string $view = null, array $viewData = [], int $statusCode = 200)
     {
         if ($this->isApiRequest($request)) {
-            return response()->json($data, $statusCode);
+            return $this->successResponse(is_array($data) ? $data : ['data' => $data], 'Success', $statusCode);
         }
 
         if ($view) {
@@ -48,23 +63,27 @@ abstract class Controller extends BaseController
 
     /**
      * Return appropriate redirect response based on request type
-     *
-     * @param Request $request
-     * @param string $route
-     * @param string $message
-     * @param string $status
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    protected function respondWithRedirect(Request $request, $route, $message = '', $status = 'success')
+    protected function respondWithRedirect(Request $request, string $route, string $message = '', string $status = 'success')
     {
         if ($this->isApiRequest($request)) {
-            return response()->json([
-                'message' => $message,
-                'status' => $status,
+            return $this->successResponse([
                 'redirect' => $route ? route($route) : null
-            ], 200);
+            ], $message);
         }
 
         return redirect()->route($route)->with($status, $message);
+    }
+
+    /**
+     * Handle validation errors consistently
+     */
+    protected function handleValidationError(Request $request, array $errors, string $message = 'Validation failed')
+    {
+        if ($this->isApiRequest($request)) {
+            return $this->errorResponse($message, 422, $errors);
+        }
+
+        return redirect()->back()->withErrors($errors)->withInput();
     }
 }

@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="text-center mb-4">
-                <h2>👤 Customer Information</h2>
+                <h2> Customer Information</h2>
                 <p class="lead">Please fill in your details to complete the booking</p>
             </div>
 

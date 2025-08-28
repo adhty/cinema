@@ -8,7 +8,7 @@
                 <div class="mb-3">
                     <i class="fas fa-check-circle fa-5x text-success"></i>
                 </div>
-                <h2>🎉 Booking Confirmed!</h2>
+                <h2> Booking Confirmed!</h2>
                 <p class="lead">Your seat has been reserved. Please complete payment to secure your ticket.</p>
             </div>
 
