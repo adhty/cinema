@@ -18,12 +18,6 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    {{-- Link Navigasi Tambahan --}}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('movies.index') }}">Movies</a>
-                    </li>
-
-                    {{-- Dropdown User --}}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
                            data-bs-toggle="dropdown" aria-expanded="false">
@@ -32,7 +26,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="#">Profile</a></li>
                             <li>
-                                <form action="{{ route('logout') }}" method="POST">
+                                <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                                     @csrf
                                     <button type="submit" class="dropdown-item">Logout</button>
                                 </form>
@@ -54,28 +48,37 @@
                     <a href="{{ route('admin.dashboard') }}" class="nav-link text-white">Dashboard</a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="{{ route('cinemas.index') }}" class="nav-link text-white">Cinemas</a>
+                    <a href="{{ route('admin.movies.index') }}" class="nav-link text-white">Movies</a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="{{ route('cities.index') }}" class="nav-link text-white">Cities</a>
+                    <a href="{{ route('admin.cinemas.index') }}" class="nav-link text-white">Cinemas</a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="{{ route('studios.index') }}" class="nav-link text-white">Studios</a>
+                    <a href="{{ route('admin.cities.index') }}" class="nav-link text-white">Cities</a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a href="{{ route('movies.index') }}" class="nav-link text-white">Movies</a>
+                    <a href="{{ route('admin.studios.index') }}" class="nav-link text-white">Studios</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="{{ route('admin.tickets.index') }}" class="nav-link text-white">Tickets</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="{{ route('admin.seats.index') }}" class="nav-link text-white">Seats</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="{{ route('admin.orders.index') }}" class="nav-link text-white">Orders</a>
                 </li>
                 <li class="nav-item mb-2">
                     <a href="#promoSubmenu" data-bs-toggle="collapse" class="nav-link text-white">Promos</a>
                     <ul class="collapse nav flex-column ms-3" id="promoSubmenu">
                         <li class="nav-item">
-                            <a href="{{ route('promos.index') }}" class="nav-link text-white">All Promos</a>
+                            <a href="{{ route('admin.promos.index') }}" class="nav-link text-white">All Promos</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('promos.index', ['status' => 'active']) }}" class="nav-link text-white">Active Promos</a>
+                            <a href="{{ route('admin.promos.index', ['status' => 'active']) }}" class="nav-link text-white">Active Promos</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('promos.index', ['status' => 'expired']) }}" class="nav-link text-white">Expired Promos</a>
+                            <a href="{{ route('admin.promos.index', ['status' => 'expired']) }}" class="nav-link text-white">Expired Promos</a>
                         </li>
                     </ul>
                 </li>

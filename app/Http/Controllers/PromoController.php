@@ -30,7 +30,7 @@ class PromoController extends Controller
         }
         
         $data = compact('promos', 'status');
-        return $this->respond($request, $data, 'promos.index', $data);
+        return $this->respond($request, $data, 'admin.promos.index', $data);
     }
  
     /**
@@ -38,7 +38,7 @@ class PromoController extends Controller
      */
     public function create(Request $request)
     {
-        return $this->respond($request, null, 'promos.create');
+        return $this->respond($request, null, 'admin.promos.create');
     }
  
     /**
@@ -67,7 +67,7 @@ class PromoController extends Controller
  
         $promo->save();
  
-        return $this->respondWithRedirect($request, 'promos.index', 'Promo created successfully.');
+        return $this->respondWithRedirect($request, 'admin.promos.index', 'Promo created successfully.');
     }
  
     /**
@@ -76,7 +76,7 @@ class PromoController extends Controller
     public function show(Request $request, Promo $promo)
     {
         $data = compact('promo');
-        return $this->respond($request, $data, 'promos.show', $data);
+        return $this->respond($request, $data, 'admin.promos.show', $data);
     }
  
     /**
@@ -85,7 +85,7 @@ class PromoController extends Controller
     public function edit(Request $request, Promo $promo)
     {
         $data = compact('promo');
-        return $this->respond($request, $data, 'promos.edit', $data);
+        return $this->respond($request, $data, 'admin.promos.edit', $data);
     }
  
     /**
@@ -118,7 +118,7 @@ class PromoController extends Controller
  
         $promo->save();
  
-        return $this->respondWithRedirect($request, 'promos.index', 'Promo updated successfully.');
+        return $this->respondWithRedirect($request, 'admin.promos.index', 'Promo updated successfully.');
     }
  
     /**
@@ -132,6 +132,6 @@ class PromoController extends Controller
         }
         
         $promo->delete();
-        return $this->respondWithRedirect($request, 'promos.index', 'Promo deleted successfully.');
+        return $this->respondWithRedirect($request, 'admin.promos.index', 'Promo deleted successfully.');
     }
 }

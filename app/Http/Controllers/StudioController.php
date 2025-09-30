@@ -1,111 +1,70 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Models\Studio;
 use App\Models\Cinema;
-use App\Models\CinemaPrice;
 use Illuminate\Http\Request;
- 
+
 class StudioController extends Controller
 {
-    /**
-     * Tampilkan semua studio
-     */
     public function index(Request $request)
     {
-        $studios = Studio::with(['cinema','cinemaPrice'])->get();
-        $data = compact('studios');
-        return $this->respond($request, $data, 'studios.index', $data);
+        $studios = Studio::with(['cinema'])->orderBy('name')->get();
+        $cinemas = Cinema::orderBy('name')->get();
+
+        return view('admin.studios.index', compact('studios', 'cinemas'));
     }
- 
-    /**
-     * Form tambah studio
-     */
+
     public function create(Request $request)
     {
-        $cinemas = Cinema::all();
-        $data = compact('cinemas');
-        return $this->respond($request, $data, 'studios.create', $data);
+        $cinemas = Cinema::orderBy('name')->get();
+
+        return view('admin.studios.create', compact('cinemas'));
     }
- 
-    /**
-     * Simpan studio baru
-     */
+
     public function store(Request $request)
     {
         $request->validate([
+            'name'      => 'required|string|max:255',
             'cinema_id' => 'required|exists:cinemas,id',
-            'name' => 'required|string|max:255',
-            'weekday_price' => 'required|integer|min:0',
-            'friday_price' => 'required|integer|min:0',
-            'weekend_price' => 'required|integer|min:0',
         ]);
 
-        $studio = Studio::create($request->only(['cinema_id', 'name']));
+        Studio::create($request->only(['name', 'cinema_id']));
 
-        CinemaPrice::create([
-            'studio_id' => $studio->id,
-            'weekday_price' => (int) $request->input('weekday_price', 0),
-            'friday_price' => (int) $request->input('friday_price', 0),
-            'weekend_price' => (int) $request->input('weekend_price', 0),
-        ]);
-
-        return $this->respondWithRedirect($request, 'studios.index', 'Studio berhasil ditambahkan.');
+        return redirect()->route('studios.index')->with('success', 'Studio berhasil ditambahkan.');
     }
- 
-    /**
-     * Tampilkan detail studio
-     */
-    public function show(Request $request, Studio $studio)
+
+    public function show(Request $request, $id)
     {
-        $cinemas = Cinema::all();
-        $data = compact('studio', 'cinemas');
-        return $this->respond($request, $data);
+        $studio = Studio::with('cinema')->findOrFail($id);
+
+        return view('admin.studios.show', compact('studio'));
     }
- 
-    /**
-     * Tampilkan form edit studio
-     */
+
     public function edit(Request $request, Studio $studio)
     {
-        $cinemas = Cinema::all();
-        $studio->load('cinemaPrice');
-        $data = compact('studio', 'cinemas');
-        return $this->respond($request, $data, 'studios.edit', $data);
+        $cinemas = Cinema::orderBy('name')->get();
+
+        return view('admin.studios.edit', compact('studio', 'cinemas'));
     }
- 
-    /**
-     * Update data studio
-     */
+
     public function update(Request $request, Studio $studio)
     {
         $request->validate([
+            'name'      => 'required|string|max:255',
             'cinema_id' => 'required|exists:cinemas,id',
-            'name' => 'required|string|max:255',
-            'weekday_price' => 'required|integer|min:0',
-            'friday_price' => 'required|integer|min:0',
-            'weekend_price' => 'required|integer|min:0',
         ]);
 
-        $studio->update($request->only(['cinema_id', 'name']));
+        $studio->update($request->only(['name', 'cinema_id']));
 
-        $price = CinemaPrice::firstOrNew(['studio_id' => $studio->id]);
-        $price->studio_id = $studio->id;
-        $price->weekday_price = (int) $request->input('weekday_price', 0);
-        $price->friday_price = (int) $request->input('friday_price', 0);
-        $price->weekend_price = (int) $request->input('weekend_price', 0);
-        $price->save();
-
-        return $this->respondWithRedirect($request, 'studios.index', 'Studio berhasil diperbarui.');
+        return redirect()->route('studios.index')->with('success', 'Studio berhasil diperbarui.');
     }
- 
-    /**
-     * Hapus studio
-     */
+
     public function destroy(Request $request, Studio $studio)
     {
         $studio->delete();
-        return $this->respondWithRedirect($request, 'studios.index', 'Studio berhasil dihapus.');
+
+        return redirect()->route('studios.index')->with('success', 'Studio berhasil dihapus.');
     }
 }

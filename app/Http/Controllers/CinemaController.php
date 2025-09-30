@@ -11,15 +11,20 @@ class CinemaController extends Controller
 {
     public function index(Request $request)
     {
-        $cinemas = Cinema::with(['city', 'studios.cinemaPrice'])->orderBy('name')->get();
+        $cinemas = Cinema::with(['city', 'studios.cinemaPrice'])
+            ->orderBy('name')
+            ->get();
 
-        return $this->respond($request, compact('cinemas'), 'cinemas.index', compact('cinemas'));
+        $cities = City::orderBy('name')->get();
+
+        return view('admin.cinemas.index', compact('cinemas', 'cities'));
     }
 
     public function create(Request $request)
     {
         $cities = City::orderBy('name')->get();
-        return $this->respond($request, compact('cities'), 'cinemas.create', compact('cities'));
+
+        return view('admin.cinemas.create', compact('cities'));
     }
 
     public function store(Request $request)
@@ -28,31 +33,32 @@ class CinemaController extends Controller
             'name'    => 'required|string|max:255',
             'address' => 'required|string',
             'city_id' => 'required|exists:cities,id',
-            'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'cover'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->only(['name', 'address', 'city_id']);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('cinemas', 'public');
+        if ($request->hasFile('cover')) {
+            $data['image'] = $request->file('cover')->store('cinemas', 'public');
         }
 
-        $cinema = Cinema::create($data);
+        Cinema::create($data);
 
-        return $this->respondWithRedirect($request, 'cinemas.index', 'Cinema berhasil ditambahkan.');
+        return redirect()->route('cinemas.index')->with('success', 'Cinema berhasil ditambahkan.');
     }
 
     public function show(Request $request, $id)
     {
         $cinema = Cinema::with(['city', 'studios.cinemaPrice'])->findOrFail($id);
 
-        return $this->respond($request, compact('cinema'), 'cinemas.show', compact('cinema'));
+        return view('admin.cinemas.show', compact('cinema'));
     }
 
     public function edit(Request $request, Cinema $cinema)
     {
         $cities = City::orderBy('name')->get();
-        return $this->respond($request, compact('cinema', 'cities'), 'cinemas.edit', compact('cinema', 'cities'));
+
+        return view('admin.cinemas.edit', compact('cinema', 'cities'));
     }
 
     public function update(Request $request, Cinema $cinema)
@@ -61,21 +67,21 @@ class CinemaController extends Controller
             'name'    => 'required|string|max:255',
             'address' => 'required|string',
             'city_id' => 'required|exists:cities,id',
-            'image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'cover'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->only(['name', 'address', 'city_id']);
 
-        if ($request->hasFile('image')) {
+        if ($request->hasFile('cover')) {
             if ($cinema->image && Storage::disk('public')->exists($cinema->image)) {
                 Storage::disk('public')->delete($cinema->image);
             }
-            $data['image'] = $request->file('image')->store('cinemas', 'public');
+            $data['image'] = $request->file('cover')->store('cinemas', 'public');
         }
 
         $cinema->update($data);
 
-        return $this->respondWithRedirect($request, 'cinemas.index', 'Cinema berhasil diperbarui.');
+        return redirect()->route('cinemas.index')->with('success', 'Cinema berhasil diperbarui.');
     }
 
     public function destroy(Request $request, Cinema $cinema)
@@ -86,6 +92,6 @@ class CinemaController extends Controller
 
         $cinema->delete();
 
-        return $this->respondWithRedirect($request, 'cinemas.index', 'Cinema berhasil dihapus.');
+        return redirect()->route('cinemas.index')->with('success', 'Cinema berhasil dihapus.');
     }
 }

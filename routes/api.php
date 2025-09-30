@@ -75,7 +75,7 @@ Route::middleware('api')->group(function () {
 
 // Seats
 Route::middleware('api')->group(function () {
-    Route::get('/seats/available', [SeatController::class, 'getAvailableSeats']); // Get available seats by ticket_id (query param)
-    Route::get('/seats/ticket/{ticketId}', [SeatController::class, 'getAllSeats']); // Get all seats for a ticket
-    Route::get('/seats/{seatId}', [SeatController::class, 'show']); // Get specific seat details
+Route::get('/seats/available', [SeatController::class, 'available']); 
+Route::get('/seats/ticket/{ticketId}', [SeatController::class, 'byTicket']); 
+Route::get('/seats/{id}', [SeatController::class, 'show']);
 });

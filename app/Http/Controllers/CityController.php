@@ -9,48 +9,52 @@ class CityController extends Controller
 {
     public function index(Request $request)
     {
-        $cities = City::all();
-        return $this->respond($request, $cities, 'cities.index', compact('cities'));
+        $cities = City::orderBy('name')->get();
+
+        return view('admin.cities.index', compact('cities'));
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        return $this->respond($request, null, 'cities.create');
+        return view('admin.cities.create');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:cities,name',
         ]);
 
-        $city = City::create($request->all());
-        return $this->respondWithRedirect($request, 'cities.index', 'City berhasil ditambahkan.');
+        City::create($request->only('name'));
+
+        return redirect()->route('cities.index')->with('success', 'Kota berhasil ditambahkan.');
     }
 
-    public function show(Request $request, City $city)
+    public function show(City $city)
     {
-        return $this->respond($request, $city);
+        return view('admin.cities.show', compact('city'));
     }
 
-    public function edit(Request $request, City $city)
+    public function edit(City $city)
     {
-        return $this->respond($request, $city, 'cities.edit', compact('city'));
+        return view('admin.cities.edit', compact('city'));
     }
 
     public function update(Request $request, City $city)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:cities,name,' . $city->id,
         ]);
 
-        $city->update($request->all());
-        return $this->respondWithRedirect($request, 'cities.index', 'City berhasil diupdate.');
+        $city->update($request->only('name'));
+
+        return redirect()->route('cities.index')->with('success', 'Kota berhasil diperbarui.');
     }
 
-    public function destroy(Request $request, City $city)
+    public function destroy(City $city)
     {
         $city->delete();
-        return $this->respondWithRedirect($request, 'cities.index', 'City berhasil dihapus.');
+
+        return redirect()->route('cities.index')->with('success', 'Kota berhasil dihapus.');
     }
 }

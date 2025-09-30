@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
+    // List semua tiket
     public function index()
     {
         $tickets = Ticket::with(['movie', 'studio', 'city', 'cinema'])
@@ -19,9 +20,10 @@ class TicketController extends Controller
             ->orderBy('time')
             ->paginate(20);
 
-        return view('tickets.index', compact('tickets'));
+        return view('admin.tickets.index', compact('tickets'));
     }
 
+    // Form buat tiket baru
     public function create()
     {
         $movies = Movie::all();
@@ -29,9 +31,10 @@ class TicketController extends Controller
         $cities = City::all();
         $cinemas = Cinema::all();
 
-        return view('tickets.create', compact('movies', 'studios', 'cities', 'cinemas'));
+        return view('admin.tickets.create', compact('movies', 'studios', 'cities', 'cinemas'));
     }
 
+    // Simpan tiket baru
     public function store(Request $request)
     {
         $request->validate([
@@ -48,22 +51,23 @@ class TicketController extends Controller
             'movie_id', 'studio_id', 'city_id', 'cinema_id', 'date', 'time', 'price'
         ]));
 
-        // Auto-create seats if requested
         if ($request->has('create_seats')) {
             $this->createSeatsForTicket($ticket);
         }
 
-        return redirect()->route('tickets.index')->with('success', 'Ticket created successfully!');
+        return redirect()->route('admin.tickets.index')
+            ->with('success', 'Ticket created successfully!');
     }
 
-
+    // Tampilkan detail tiket
     public function show($id)
     {
         $ticket = Ticket::with(['movie', 'studio', 'city', 'cinema', 'seats.order.user'])->findOrFail($id);
 
-        return view('tickets.show', compact('ticket'));
+        return view('admin.tickets.show', compact('ticket'));
     }
 
+    // Form edit tiket
     public function edit($id)
     {
         $ticket = Ticket::findOrFail($id);
@@ -72,9 +76,10 @@ class TicketController extends Controller
         $cities = City::all();
         $cinemas = Cinema::all();
 
-        return view('tickets.edit', compact('ticket', 'movies', 'studios', 'cities', 'cinemas'));
+        return view('admin.tickets.edit', compact('ticket', 'movies', 'studios', 'cities', 'cinemas'));
     }
 
+    // Update tiket
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -92,33 +97,37 @@ class TicketController extends Controller
             'movie_id', 'studio_id', 'city_id', 'cinema_id', 'date', 'time', 'price'
         ]));
 
-        return redirect()->route('tickets.show', $id)->with('success', 'Ticket updated successfully!');
+        return redirect()->route('admin.tickets.show', $id)
+            ->with('success', 'Ticket updated successfully!');
     }
 
+    // Hapus tiket
     public function destroy($id)
     {
         $ticket = Ticket::findOrFail($id);
 
-        // Check if ticket has any bookings
         $bookedSeats = $ticket->seats()->where('status', 'booked')->count();
 
         if ($bookedSeats > 0) {
-            return redirect()->route('tickets.index')
+            return redirect()->route('admin.tickets.index')
                 ->with('error', 'Cannot delete ticket with existing bookings!');
         }
 
-        // Delete all seats first
         $ticket->seats()->delete();
-
-        // Delete ticket
         $ticket->delete();
 
-        return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully!');
+        return redirect()->route('admin.tickets.index')
+            ->with('success', 'Ticket deleted successfully!');
     }
 
+    // Buat seats otomatis
     private function createSeatsForTicket(Ticket $ticket)
     {
-        $seatNumbers = ['A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'B4', 'B5', 'C1', 'C2', 'C3', 'C4', 'C5'];
+        $seatNumbers = [
+            'A1','A2','A3','A4','A5',
+            'B1','B2','B3','B4','B5',
+            'C1','C2','C3','C4','C5'
+        ];
 
         foreach ($seatNumbers as $number) {
             Seats::create([
@@ -129,4 +138,17 @@ class TicketController extends Controller
         }
     }
 
+    // AJAX: jadwal tiket per cinema & tanggal
+    public function getScheduleAjax($cinemaId, $date)
+    {
+        $schedules = Ticket::with(['movie', 'studio', 'cinema'])
+            ->where('cinema_id', $cinemaId)
+            ->where('date', $date)
+            ->orderBy('movie_id')
+            ->orderBy('time')
+            ->get()
+            ->groupBy('movie_id');
+
+        return response()->json($schedules);
+    }
 }

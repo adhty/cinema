@@ -2,92 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
-use App\Models\Seats;
+use App\Models\Seat;
 use Illuminate\Http\Request;
 
 class OrdersController extends Controller
 {
-    // List semua order
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'seat.ticket.movie', 'seat.ticket.cinema', 'seat.ticket.studio']);
+        // filter by user
+        $userId = $request->input('user_id');
+        $payment = $request->input('payment');
 
-        // Filter by user if provided
-        if ($request->has('user_id') && $request->user_id) {
-            $query->where('user_id', $request->user_id);
+        $query = Order::with(['user', 'seat']);
+
+        if ($userId) {
+            $query->where('user_id', $userId);
         }
 
-        // Filter by payment status if provided
-        if ($request->has('payment') && $request->payment) {
-            $query->where('payment', $request->payment);
+        if ($payment) {
+            $query->where('payment', $payment);
         }
 
-        $orders = $query->latest()->paginate(20);
+        $orders = $query->latest()->paginate(10);
 
-        // Get all users for filter dropdown
-        $users = User::orderBy('name')->get();
+        // ambil list user buat filter
+        $users = User::all();
 
-        return view('orders.index', compact('orders', 'users'));
-    }
+        // statistik
+        $stats = [
+            'total'     => Order::count(),
+            'pending'   => Order::where('payment', 'pending')->count(),
+            'paid'      => Order::where('payment', 'paid')->count(),
+            'cancelled' => Order::where('payment', 'cancelled')->count(),
+        ];
 
-    // Detail order tertentu
-    public function show($id)
-    {
-        $order = Order::with(['user', 'seat.ticket.movie', 'seat.ticket.cinema', 'seat.ticket.studio'])
-            ->findOrFail($id);
-
-        return view('orders.show', compact('order'));
-    }
-
-    // Update payment status
-    public function updatePayment(Request $request, $id)
-    {
-        $request->validate([
-            'payment' => 'required|in:pending,paid,cancelled'
-        ]);
-
-        $order = Order::findOrFail($id);
-        $order->update(['payment' => $request->payment]);
-
-        // If cancelled, make seat available again
-        if ($request->payment === 'cancelled') {
-            $order->seat->markAsAvailable();
-        }
-
-        return redirect()->route('orders.show', $id)
-            ->with('success', 'Payment status updated successfully!');
-    }
-
-    // Cancel order
-    public function cancel($id)
-    {
-        $order = Order::findOrFail($id);
-
-        if ($order->payment === 'paid') {
-            return redirect()->route('orders.show', $id)
-                ->with('error', 'Cannot cancel a paid order');
-        }
-
-        $order->update(['payment' => 'cancelled']);
-        $order->seat->markAsAvailable();
-
-        return redirect()->route('orders.index')
-            ->with('success', 'Order cancelled successfully!');
-    }
-
-    // Delete order
-    public function destroy($id)
-    {
-        $order = Order::findOrFail($id);
-
-        // Make seat available again
-        $order->seat->markAsAvailable();
-
-        $order->delete();
-
-        return redirect()->route('orders.index')
-            ->with('success', 'Order deleted successfully!');
+        return view('admin.orders.index', compact('orders', 'users', 'stats'));
     }
 }

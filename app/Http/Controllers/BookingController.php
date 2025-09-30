@@ -11,125 +11,103 @@ use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    /**
-     * Show available movies and showtimes
-     */
+    // Tampilkan halaman index (Blade)
     public function index()
+    {
+        return view('booking.index'); // hanya return view kosong
+    }
+
+    // API JSON untuk ambil tiket
+    public function getTickets()
     {
         $tickets = Ticket::with(['movie', 'cinema', 'studio', 'city', 'seats'])
             ->where('date', '>=', today())
             ->orderBy('date')
             ->orderBy('time')
             ->get()
-            ->groupBy(function($ticket) {
-                return $ticket->movie->title ?? 'Unknown Movie';
-            });
+            ->groupBy(fn($ticket) => $ticket->movie->title ?? 'Unknown Movie');
 
-        return view('booking.index', compact('tickets'));
+        return response()->json($tickets);
     }
 
-    /**
-     * Show seat selection for a specific ticket
-     */
+    // Pilih kursi
     public function selectSeat($ticketId)
     {
         $ticket = Ticket::with(['movie', 'cinema', 'studio', 'city', 'seats.order.user'])
             ->findOrFail($ticketId);
 
-        // Check if show is still available (not in the past)
         if ($ticket->date < today() || ($ticket->date == today() && $ticket->time < now()->format('H:i'))) {
             return redirect()->route('booking.index')
                 ->with('error', 'This show has already passed!');
         }
 
-        $seats = $ticket->seats->groupBy(function($seat) {
-            return substr($seat->number, 0, 1); // Group by row (A, B, C)
-        });
+        $seats = $ticket->seats->groupBy(fn($seat) => substr($seat->number, 0, 1));
 
         return view('booking.select-seat', compact('ticket', 'seats'));
     }
 
-    /**
-     * Show customer form for selected seat
-     */
-    public function customerForm($seatId)
-    {
-        $seat = Seats::with(['ticket.movie', 'ticket.cinema', 'ticket.studio'])
-            ->findOrFail($seatId);
-
-        // Check if seat is still available
-        if (!$seat->isAvailable()) {
-            return redirect()->route('booking.select-seat', $seat->ticket_id)
-                ->with('error', 'Sorry, this seat is no longer available!');
-        }
-
-        return view('booking.customer-form', compact('seat'));
-    }
-
-    /**
-     * Process the booking
-     */
+    // Proses booking kursi
     public function processBooking(Request $request, $seatId)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
-            'gender' => 'nullable|in:male,female',
-            'birthdate' => 'nullable|date',
         ]);
 
-        $seat = Seats::with(['ticket.movie', 'ticket.cinema', 'ticket.studio'])
-            ->findOrFail($seatId);
+        $seat = Seats::with(['ticket'])->findOrFail($seatId);
 
-        // Double check seat availability
         if (!$seat->isAvailable()) {
-            return redirect()->route('booking.select-seat', $seat->ticket_id)
-                ->with('error', 'Sorry, this seat is no longer available!');
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => 'Seat not available'])
+                : redirect()->route('booking.select-seat', $seat->ticket_id)
+                    ->with('error', 'Sorry, this seat is no longer available!');
         }
 
         try {
             DB::beginTransaction();
 
-            // Create or find user
             $user = User::firstOrCreate(
                 ['email' => $request->email],
                 [
                     'name' => $request->name,
                     'phone' => $request->phone,
-                    'gender' => $request->gender,
-                    'birthdate' => $request->birthdate,
-                    'password' => bcrypt('password123'), // Default password
+                    'password' => bcrypt('password123'),
                     'is_admin' => false,
                 ]
             );
 
-            // Create order
             $order = Order::create([
                 'user_id' => $user->id,
                 'seat_id' => $seat->id,
                 'payment' => 'pending'
             ]);
 
-            // Mark seat as booked
             $seat->markAsBooked();
 
             DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'order_id' => $order->id
+                ]);
+            }
 
             return redirect()->route('booking.confirmation', $order->id)
                 ->with('success', 'Booking successful! Please proceed with payment.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            return redirect()->route('booking.select-seat', $seat->ticket_id)
-                ->with('error', 'Booking failed. Please try again.');
+
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => 'Booking failed.'])
+                : redirect()->route('booking.select-seat', $seat->ticket_id)
+                    ->with('error', 'Booking failed. Please try again.');
         }
     }
 
-    /**
-     * Show booking confirmation and payment info
-     */
+    // Konfirmasi booking
     public function confirmation($orderId)
     {
         $order = Order::with(['user', 'seat.ticket.movie', 'seat.ticket.cinema', 'seat.ticket.studio'])
@@ -138,9 +116,7 @@ class BookingController extends Controller
         return view('booking.confirmation', compact('order'));
     }
 
-    /**
-     * Simulate payment (for demo purposes)
-     */
+    // Simulasi pembayaran
     public function simulatePayment($orderId)
     {
         $order = Order::findOrFail($orderId);
@@ -156,9 +132,7 @@ class BookingController extends Controller
             ->with('success', 'Payment successful! Here is your ticket.');
     }
 
-    /**
-     * Show digital ticket
-     */
+    // Tampilkan tiket
     public function ticket($orderId)
     {
         $order = Order::with(['user', 'seat.ticket.movie', 'seat.ticket.cinema', 'seat.ticket.studio'])
@@ -172,9 +146,7 @@ class BookingController extends Controller
         return view('booking.ticket', compact('order'));
     }
 
-    /**
-     * Cancel booking (only for pending orders)
-     */
+    // Batalkan booking
     public function cancel($orderId)
     {
         $order = Order::findOrFail($orderId);
@@ -187,10 +159,7 @@ class BookingController extends Controller
         try {
             DB::beginTransaction();
 
-            // Mark seat as available
             $order->seat->markAsAvailable();
-            
-            // Update order status
             $order->update(['payment' => 'cancelled']);
 
             DB::commit();
@@ -200,7 +169,7 @@ class BookingController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->route('booking.confirmation', $orderId)
                 ->with('error', 'Failed to cancel booking. Please try again.');
         }

@@ -14,12 +14,12 @@ class Seats extends Model
 
     public function ticket()
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->belongsTo(Ticket::class, 'ticket_id');
     }
 
     public function order()
     {
-        return $this->hasOne(Order::class, 'seat_id');
+        return $this->hasMany(Order::class, 'seat_id');
     }
 
     // Check if seat is available

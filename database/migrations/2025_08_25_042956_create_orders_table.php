@@ -17,9 +17,6 @@ return new class extends Migration
             $table->foreignId('seat_id')->constrained('seats')->cascadeOnDelete();
             $table->enum('payment', ['pending', 'paid', 'cancelled'])->default('pending');
             $table->timestamps();
-
-            // Satu kursi cuma bisa ada di satu order aktif
-            $table->unique('seat_id');
         });
     }
 
