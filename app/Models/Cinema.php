@@ -34,6 +34,11 @@ class Cinema extends Model
         return $this->hasMany(Studio::class);
     }
 
+    public function movies()
+    {
+        return $this->hasMany(Movie::class);
+    }
+
     public function tickets(): HasManyThrough
     {
         return $this->hasManyThrough(Ticket::class, Studio::class);

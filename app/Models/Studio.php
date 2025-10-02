@@ -12,11 +12,8 @@ class Studio extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'cinema_id',
-        'name',
-        'type',
-    ];
+        protected $fillable = ['cinema_id', 'name', 'weekday_price', 'friday_price', 'weekend_price'];
+
 
     protected $casts = [
         'created_at' => 'datetime',

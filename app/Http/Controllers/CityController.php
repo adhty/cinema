@@ -27,7 +27,7 @@ class CityController extends Controller
 
         City::create($request->only('name'));
 
-        return redirect()->route('cities.index')->with('success', 'Kota berhasil ditambahkan.');
+        return redirect()->route('admin.cities.index')->with('success', 'Kota berhasil ditambahkan.');
     }
 
     public function show(City $city)
@@ -48,13 +48,13 @@ class CityController extends Controller
 
         $city->update($request->only('name'));
 
-        return redirect()->route('cities.index')->with('success', 'Kota berhasil diperbarui.');
+        return redirect()->route('admin.cities.index')->with('success', 'Kota berhasil diperbarui.');
     }
 
     public function destroy(City $city)
     {
         $city->delete();
 
-        return redirect()->route('cities.index')->with('success', 'Kota berhasil dihapus.');
+        return redirect()->route('admin.cities.index')->with('success', 'Kota berhasil dihapus.');
     }
 }

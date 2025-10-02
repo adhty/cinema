@@ -12,7 +12,7 @@
         </ul>
     </div>
     @endif
-    <form action="{{ route('studios.store') }}" method="POST">
+    <form action="{{ route('admin.studios.store') }}" method="POST">
         @csrf
         <div class="mb-3">
             <label>Cinema</label>

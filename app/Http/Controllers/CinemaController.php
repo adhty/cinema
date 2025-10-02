@@ -33,7 +33,8 @@ class CinemaController extends Controller
             'name'    => 'required|string|max:255',
             'address' => 'required|string',
             'city_id' => 'required|exists:cities,id',
-            'cover'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
         ]);
 
         $data = $request->only(['name', 'address', 'city_id']);
@@ -44,7 +45,7 @@ class CinemaController extends Controller
 
         Cinema::create($data);
 
-        return redirect()->route('cinemas.index')->with('success', 'Cinema berhasil ditambahkan.');
+        return redirect()->route('admin.cinemas.index')->with('success', 'Cinema berhasil ditambahkan.');
     }
 
     public function show(Request $request, $id)
@@ -81,7 +82,7 @@ class CinemaController extends Controller
 
         $cinema->update($data);
 
-        return redirect()->route('cinemas.index')->with('success', 'Cinema berhasil diperbarui.');
+        return redirect()->route('admin.cinemas.index')->with('success', 'Cinema berhasil diperbarui.');
     }
 
     public function destroy(Request $request, Cinema $cinema)
@@ -92,6 +93,6 @@ class CinemaController extends Controller
 
         $cinema->delete();
 
-        return redirect()->route('cinemas.index')->with('success', 'Cinema berhasil dihapus.');
+        return redirect()->route('admin.cinemas.index')->with('success', 'Cinema berhasil dihapus.');
     }
 }

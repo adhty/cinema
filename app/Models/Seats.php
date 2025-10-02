@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Seats extends Model
 {
-    protected $fillable = ['ticket_id', 'number', 'status'];
+    protected $fillable = ['ticket_id', 'number', 'status', 'order_id'];
 
     protected $casts = [
         'status' => 'string',
@@ -19,8 +19,11 @@ class Seats extends Model
 
     public function order()
     {
-        return $this->hasMany(Order::class, 'seat_id');
+        return $this->belongsToMany(Order::class, 'order_seat', 'seat_id', 'order_id')
+            ->withTimestamps();
     }
+
+
 
     // Check if seat is available
     public function isAvailable()

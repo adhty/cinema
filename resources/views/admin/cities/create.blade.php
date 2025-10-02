@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container">
@@ -10,7 +10,7 @@
         </div>
     @endif
 
-    <form action="{{ route('cities.store') }}" method="POST">
+    <form action="{{ route('admin.cities.store') }}" method="POST">
         @csrf
         <div class="form-group mb-2">
             <label>Name</label>

@@ -14,47 +14,67 @@ class Order extends Model
         'updated_at' => 'datetime',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function seat()
+    public function seats()
     {
-        return $this->belongsTo(Seats::class, 'seat_id');
+        return $this->belongsToMany(Seats::class, 'order_seat', 'order_id', 'seat_id')
+            ->withTimestamps();
     }
 
-    // Get ticket through seat relationship
+
+
+    // Opsional → bisa diakses lewat $order->seat->ticket
     public function ticket()
     {
-        return $this->hasOneThrough(Ticket::class, Seats::class, 'id', 'id', 'seat_id', 'ticket_id');
+        return $this->hasOneThrough(
+            Ticket::class,
+            Seats::class,
+            'id',        // Primary key seats
+            'id',        // Primary key tickets
+            'seat_id',   // FK di orders
+            'ticket_id'  // FK di seats
+        );
     }
 
-    // Scope for pending orders
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
     public function scopePending($query)
     {
         return $query->where('payment', 'pending');
     }
 
-    // Scope for paid orders
     public function scopePaid($query)
     {
         return $query->where('payment', 'paid');
     }
 
-    // Scope for cancelled orders
     public function scopeCancelled($query)
     {
         return $query->where('payment', 'cancelled');
     }
 
-    // Check if order can be cancelled
+    /*
+    |--------------------------------------------------------------------------
+    | HELPERS
+    |--------------------------------------------------------------------------
+    */
     public function canBeCancelled()
     {
         return $this->payment === 'pending';
     }
 
-    // Get total price from seat's ticket
     public function getTotalPriceAttribute()
     {
         return $this->seat->ticket->price ?? 0;

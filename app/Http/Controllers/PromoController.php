@@ -6,7 +6,6 @@ use App\Models\Promo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
- 
 class PromoController extends Controller
 {
     /**
@@ -29,16 +28,15 @@ class PromoController extends Controller
                 break;
         }
         
-        $data = compact('promos', 'status');
-        return $this->respond($request, $data, 'admin.promos.index', $data);
+        return view('admin.promos.index', compact('promos', 'status'));
     }
  
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create()
     {
-        return $this->respond($request, null, 'admin.promos.create');
+        return view('admin.promos.create');
     }
  
     /**
@@ -67,25 +65,23 @@ class PromoController extends Controller
  
         $promo->save();
  
-        return $this->respondWithRedirect($request, 'admin.promos.index', 'Promo created successfully.');
+        return redirect()->route('promos.index')->with('success', 'Promo created successfully.');
     }
  
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, Promo $promo)
+    public function show(Promo $promo)
     {
-        $data = compact('promo');
-        return $this->respond($request, $data, 'admin.promos.show', $data);
+        return view('admin.promos.show', compact('promo'));
     }
  
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request, Promo $promo)
+    public function edit(Promo $promo)
     {
-        $data = compact('promo');
-        return $this->respond($request, $data, 'admin.promos.edit', $data);
+        return view('admin.promos.edit', compact('promo'));
     }
  
     /**
@@ -118,13 +114,13 @@ class PromoController extends Controller
  
         $promo->save();
  
-        return $this->respondWithRedirect($request, 'admin.promos.index', 'Promo updated successfully.');
+        return redirect()->route('promos.index')->with('success', 'Promo updated successfully.');
     }
  
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, Promo $promo)
+    public function destroy(Promo $promo)
     {
         // Delete cover if exists
         if ($promo->cover) {
@@ -132,6 +128,6 @@ class PromoController extends Controller
         }
         
         $promo->delete();
-        return $this->respondWithRedirect($request, 'admin.promos.index', 'Promo deleted successfully.');
+        return redirect()->route('promos.index')->with('success', 'Promo deleted successfully.');
     }
 }

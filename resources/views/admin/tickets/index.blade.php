@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container">
@@ -83,7 +83,8 @@
                                     <td>{{ $ticket->time ?? 'N/A' }}</td>
                                     <td><strong>Rp {{ number_format($ticket->price ?? 0, 0, ',', '.') }}</strong></td>
                                     <td>
-                                        <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-sm btn-info">View</a>                                        <a href="{{ route('admin.tickets.edit', $ticket->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                        <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-sm btn-info">View</a>                        
+                                        <a href="{{ route('admin.tickets.edit', $ticket->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                         <form method="POST" action="{{ route('admin.tickets.destroy', $ticket->id) }}" class="d-inline">
                                             @csrf
                                             @method('DELETE')
@@ -106,7 +107,7 @@
             @else
                 <div class="text-center py-4">
                     <p class="text-muted mb-3">No tickets found.</p>
-                    <a href="{{ route('tickets.create') }}" class="btn btn-primary">Create First Ticket</a>
+                    <a href="{{ route('admin.tickets.create') }}" class="btn btn-primary">Create First Ticket</a>
                 </div>
             @endif
         </div>

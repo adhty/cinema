@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Seat;
 use App\Models\Seats;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
@@ -57,13 +56,10 @@ class SeatsController extends Controller
 
         Seats::create($request->all());
 
-        return redirect()->route('admin.seats.index')->with('success', 'Kursi berhasil ditambahkan!');
+        return redirect()->route('admin.seats.index')
+            ->with('success', 'Kursi berhasil ditambahkan!');
     }
 
-
-    /**
-     * Halaman admin: detail kursi
-     */
     public function show($id)
     {
         $seat = Seats::with([
@@ -76,9 +72,6 @@ class SeatsController extends Controller
         return view('admin.seats.show', compact('seat'));
     }
 
-    /**
-     * Halaman user: pilih kursi berdasarkan ticket
-     */
     public function byTicket($ticketId)
     {
         $ticket = Ticket::with(['movie', 'cinema', 'studio', 'city'])

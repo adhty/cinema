@@ -23,9 +23,10 @@
                 <td>{{ $studio->id }}</td>
                 <td>{{ optional($studio->cinema)->name ?? '-' }}</td>
                 <td>{{ $studio->name }}</td>
-                <td>Rp {{ number_format(optional($studio->cinemaPrice)->weekday_price ?? 0, 0, ',', '.') }}</td>
-                <td>Rp {{ number_format(optional($studio->cinemaPrice)->friday_price ?? 0, 0, ',', '.') }}</td>
-                <td>Rp {{ number_format(optional($studio->cinemaPrice)->weekend_price ?? 0, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format($studio->weekday_price, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format($studio->friday_price, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format($studio->weekend_price, 0, ',', '.') }}</td>
+
                 <td>
                     <a href="{{ route('admin.studios.edit', $studio->id) }}" class="btn btn-warning btn-sm">Edit</a>
                     <form action="{{ route('admin.studios.destroy', $studio->id) }}" method="POST" style="display:inline;">

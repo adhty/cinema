@@ -5,8 +5,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>🎫 Edit Ticket #{{ $ticket->id }}</h2>
         <div>
-            <a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-secondary">← Back to Ticket</a>
-            <a href="{{ route('tickets.index') }}" class="btn btn-outline-secondary">All Tickets</a>
+            <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-secondary">← Back to Ticket</a>
+            <a href="{{ route('admin.tickets.index') }}" class="btn btn-outline-secondary">All Tickets</a>
         </div>
     </div>
 
@@ -17,7 +17,7 @@
                     <h5 class="mb-0">Edit Ticket Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('tickets.update', $ticket->id) }}">
+                    <form method="POST" action="{{ route('admin.tickets.update', $ticket->id) }}">
                         @csrf
                         @method('PUT')
 
@@ -143,7 +143,7 @@
                         @endif
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('tickets.show', $ticket->id) }}" class="btn btn-secondary">Cancel</a>
+                            <a href="{{ route('admin.tickets.show', $ticket->id) }}" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Update Ticket
                             </button>

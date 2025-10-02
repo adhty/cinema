@@ -1,37 +1,62 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Daftar Kursi')
 
 @section('content')
 <div class="container">
-    <h2>Tambah Kursi</h2>
-    <form action="{{ route('admin.seats.store') }}" method="POST">
-        @csrf
-        <div class="mb-3">
-            <label for="ticket_id" class="form-label">Ticket</label>
-            <select name="ticket_id" id="ticket_id" class="form-control" required>
-                <option value="">-- Pilih Ticket --</option>
-                @foreach($tickets as $ticket)
-                    <option value="{{ $ticket->id }}">
-                        {{ $ticket->movie->title }} | {{ $ticket->studio->name }} | {{ $ticket->date }} {{ $ticket->time }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Daftar Kursi</h2>
+        <a href="{{ route('admin.seats.create') }}" class="btn btn-primary">+ Tambah Kursi</a>
+    </div>
 
-        <div class="mb-3">
-            <label for="number" class="form-label">Nomor Kursi</label>
-            <input type="text" name="number" id="number" class="form-control" placeholder="misal A1, B2" required>
-        </div>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-        <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select name="status" id="status" class="form-control" required>
-                <option value="available">Available</option>
-                <option value="booked">Booked</option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-success">Simpan</button>
-        <a href="{{ route('admin.seats.index') }}" class="btn btn-secondary">Batal</a>
-    </form>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Film</th>
+                <th>Studio</th>
+                <th>Tanggal</th>
+                <th>Jam</th>
+                <th>Nomor Kursi</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($seats as $seat)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $seat->ticket->movie->title ?? '-' }}</td>
+                    <td>{{ $seat->ticket->studio->name ?? '-' }}</td>
+                    <td>{{ $seat->ticket->date ?? '-' }}</td>
+                    <td>{{ $seat->ticket->time ?? '-' }}</td>
+                    <td>{{ $seat->number }}</td>
+                    <td>
+                        @if($seat->status === 'available')
+                            <span class="badge bg-success">Available</span>
+                        @else
+                            <span class="badge bg-danger">Booked</span>
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('admin.seats.edit', $seat->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                        <form action="{{ route('admin.seats.destroy', $seat->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus kursi ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-sm btn-danger">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" class="text-center">Belum ada data kursi</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
 @endsection

@@ -16,6 +16,7 @@
     <thead class="table-dark">
         <tr>
             <th>#</th>
+            <th>Gambar</th> {{-- 🔥 kolom baru --}}
             <th>Nama</th>
             <th>Kota</th>
             <th>Alamat</th>
@@ -26,6 +27,16 @@
         @forelse($cinemas as $cinema)
         <tr>
             <td>{{ $loop->iteration }}</td>
+            <td>
+                @if($cinema->image)
+                    <img src="{{ asset('storage/'.$cinema->image) }}" 
+                         alt="{{ $cinema->name }}" 
+                         width="80" 
+                         class="rounded">
+                @else
+                    <span class="text-muted">No Image</span>
+                @endif
+            </td>
             <td>{{ $cinema->name }}</td>
             <td>{{ $cinema->city->name ?? '-' }}</td>
             <td>{{ $cinema->address }}</td>
@@ -41,7 +52,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="5" class="text-center">Belum ada data cinema</td>
+            <td colspan="6" class="text-center">Belum ada data cinema</td>
         </tr>
         @endforelse
     </tbody>
