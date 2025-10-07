@@ -1,165 +1,143 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Seat;
 use App\Models\Seats;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 
 class SeatController extends Controller
 {
+    /**
+     * GET /api/seats
+     * List semua seats dengan filter optional
+     */
     public function index(Request $request)
     {
-        $query = Seats::with(['ticket.movie', 'ticket.cinema', 'ticket.studio', 'order.user']);
+        $query = Seats::with([
+            'ticket.movie',
+            'ticket.cinema',
+            'ticket.studio',
+            'orders.user'
+        ]);
 
+        // Filter berdasarkan ticket
         if ($request->filled('ticket_id')) {
             $query->where('ticket_id', $request->ticket_id);
         }
 
+        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $seats = $query->orderBy('number')->get();
+        $seats = $query->orderBy('ticket_id')
+            ->orderBy('number')
+            ->paginate(20);
 
-        return response()->json([
-            'success' => true,
-            'data'    => $seats
-        ]);
+        return response()->json($seats);
     }
-    public function available(Request $request)
+
+    /**
+     * POST /api/seats
+     * Tambah kursi baru (admin)
+     */
+    public function store(Request $request)
     {
         $request->validate([
-            'ticket_id' => 'required|exists:tickets,id'
+            'ticket_id' => 'required|exists:tickets,id',
+            'number'    => 'required|string|max:10',
+            'status'    => 'required|in:available,booked'
         ]);
 
-        $ticket = Ticket::with(['movie', 'cinema', 'studio', 'city'])->findOrFail($request->ticket_id);
-
-        $seats = Seats::where('ticket_id', $ticket->id)
-            ->with('order')
-            ->get()
-            ->map(fn($seat) => [
-                'id'          => $seat->id,
-                'number'      => $seat->number,
-                'status'      => $seat->status,
-                'is_available' => $seat->isAvailable(),
-            ]);
+        $seat = Seats::create([
+            'ticket_id' => $request->ticket_id,
+            'number'    => $request->number,
+            'status'    => $request->status,
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Available seats retrieved successfully',
-            'data'    => [
-                'ticket' => [
-                    'id'     => $ticket->id,
-                    'movie'  => $ticket->movie->title ?? 'N/A',
-                    'cinema' => $ticket->cinema->name ?? 'N/A',
-                    'studio' => $ticket->studio->name ?? 'N/A',
-                    'city'   => $ticket->city->name ?? 'N/A',
-                    'date'   => $ticket->date,
-                    'time'   => $ticket->time,
-                    'price'  => $ticket->price,
-                ],
-                'seats' => $seats->where('is_available', true)->values(),
-            ]
-        ]);
+            'message' => 'Seat created successfully',
+            'data'    => $seat
+        ], 201);
+    }
+
+    /**
+     * GET /api/seats/{id}
+     * Detail seat beserta ticket dan orders
+     */
+    public function show($id)
+    {
+        $seat = Seats::with([
+            'ticket.movie',
+            'ticket.cinema',
+            'ticket.studio',
+            'orders.user'
+        ])->findOrFail($id);
+
+        return response()->json($seat);
     }
 
     /**
      * GET /api/seats/ticket/{ticketId}
-     * Ambil semua kursi berdasarkan ticket ID
+     * Ambil semua seats berdasarkan ticket
      */
     public function byTicket($ticketId)
     {
         $ticket = Ticket::with(['movie', 'cinema', 'studio', 'city'])->findOrFail($ticketId);
 
-        $seats = Seats::where('ticket_id', $ticketId)
-            ->with(['order.user'])
+        $seats = Seats::with(['orders.user'])
+            ->where('ticket_id', $ticketId)
             ->orderBy('number')
-            ->get()
-            ->map(function ($seat) {
-                $data = [
-                    'id'          => $seat->id,
-                    'number'      => $seat->number,
-                    'status'      => $seat->status,
-                    'is_available' => $seat->isAvailable(),
-                ];
+            ->get();
 
-                if ($seat->order) {
-                    $data['order'] = [
-                        'id'       => $seat->order->id,
-                        'user'     => $seat->order->user->name ?? 'N/A',
-                        'payment'  => $seat->order->payment,
-                        'booked_at' => $seat->order->created_at->toDateTimeString(),
-                    ];
-                }
-
-                return $data;
-            });
+        $availableSeats = $seats->where('status', 'available')->values();
+        $bookedSeats = $seats->where('status', 'booked')->values();
 
         return response()->json([
-            'success' => true,
-            'message' => 'All seats retrieved successfully',
-            'data'    => [
-                'ticket' => [
-                    'id'     => $ticket->id,
-                    'movie'  => $ticket->movie->title ?? 'N/A',
-                    'cinema' => $ticket->cinema->name ?? 'N/A',
-                    'studio' => $ticket->studio->name ?? 'N/A',
-                    'city'   => $ticket->city->name ?? 'N/A',
-                    'date'   => $ticket->date,
-                    'time'   => $ticket->time,
-                    'price'  => $ticket->price,
-                ],
-                'seats' => $seats
-            ]
+            'ticket'         => $ticket,
+            'seats'          => $seats,
+            'availableSeats' => $availableSeats,
+            'bookedSeats'    => $bookedSeats,
         ]);
     }
 
     /**
-     * GET /api/seats/{id}
-     * Ambil detail kursi berdasarkan ID
+     * PUT /api/seats/{id}
+     * Update seat (admin)
      */
-    public function show($id)
+    public function update(Request $request, $id)
     {
-        $seat = Seats::with(['ticket.movie', 'ticket.cinema', 'ticket.studio', 'ticket.city', 'order.user'])
-            ->findOrFail($id);
+        $seat = Seats::findOrFail($id);
 
-        $data = [
-            'id'          => $seat->id,
-            'number'      => $seat->number,
-            'status'      => $seat->status,
-            'is_available' => $seat->isAvailable(),
-            'ticket'      => [
-                'id'     => $seat->ticket->id,
-                'movie'  => $seat->ticket->movie->title ?? 'N/A',
-                'cinema' => $seat->ticket->cinema->name ?? 'N/A',
-                'studio' => $seat->ticket->studio->name ?? 'N/A',
-                'city'   => $seat->ticket->city->name ?? 'N/A',
-                'date'   => $seat->ticket->date,
-                'time'   => $seat->ticket->time,
-                'price'  => $seat->ticket->price,
-            ]
-        ];
+        $request->validate([
+            'number' => 'sometimes|string|max:10',
+            'status' => 'sometimes|in:available,booked'
+        ]);
 
-        if ($seat->order) {
-            $data['order'] = [
-                'id'      => $seat->order->id,
-                'user'    => [
-                    'name'  => $seat->order->user->name ?? 'N/A',
-                    'email' => $seat->order->user->email ?? 'N/A',
-                    'phone' => $seat->order->user->phone ?? 'N/A',
-                ],
-                'payment' => $seat->order->payment,
-                'booked_at' => $seat->order->created_at->toDateTimeString(),
-            ];
-        }
+        $seat->update($request->only(['number', 'status']));
 
         return response()->json([
             'success' => true,
-            'message' => 'Seat details retrieved successfully',
-            'data'    => $data
+            'message' => 'Seat updated successfully',
+            'data'    => $seat
+        ]);
+    }
+
+    /**
+     * DELETE /api/seats/{id}
+     * Hapus seat (admin)
+     */
+    public function destroy($id)
+    {
+        $seat = Seats::findOrFail($id);
+        $seat->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Seat deleted successfully'
         ]);
     }
 }

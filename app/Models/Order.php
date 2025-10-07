@@ -14,42 +14,22 @@ class Order extends Model
         'updated_at' => 'datetime',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONSHIPS
-    |--------------------------------------------------------------------------
-    */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
-    public function seats()
+    public function seat()
     {
-        return $this->belongsToMany(Seats::class, 'order_seat', 'order_id', 'seat_id')
-            ->withTimestamps();
+        return $this->belongsTo(Seats::class);
     }
 
-
-
-    // Opsional → bisa diakses lewat $order->seat->ticket
+    // Ambil tiket lewat seat
     public function ticket()
     {
-        return $this->hasOneThrough(
-            Ticket::class,
-            Seats::class,
-            'id',        // Primary key seats
-            'id',        // Primary key tickets
-            'seat_id',   // FK di orders
-            'ticket_id'  // FK di seats
-        );
+        return $this->seat ? $this->seat->ticket : null;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SCOPES
-    |--------------------------------------------------------------------------
-    */
     public function scopePending($query)
     {
         return $query->where('payment', 'pending');
@@ -65,18 +45,15 @@ class Order extends Model
         return $query->where('payment', 'cancelled');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HELPERS
-    |--------------------------------------------------------------------------
-    */
-    public function canBeCancelled()
+    public function canBeCancelled(): bool
     {
         return $this->payment === 'pending';
     }
 
-    public function getTotalPriceAttribute()
+    public function getTotalPriceAttribute(): float
     {
-        return $this->seat->ticket->price ?? 0;
+        return $this->seat && $this->seat->ticket
+            ? $this->seat->ticket->price
+            : 0;
     }
 }

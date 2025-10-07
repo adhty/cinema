@@ -1,95 +1,87 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
 <div class="container">
-    <h2>Booking Seats - {{ $ticket->movie->title }}</h2>
+    <h2 class="mb-4">Booking Kursi untuk {{ $movie->title }}</h2>
 
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+    {{-- Error handling --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
-    <form action="{{ route('orders.store') }}" method="POST" id="bookingForm">
+    <form action="{{ route('orders.store') }}" method="POST">
         @csrf
-        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
-        <input type="hidden" name="movie_id" value="{{ $ticket->movie->id }}">
-        <input type="hidden" name="ticket_id" value="{{ $ticket->id }}">
-        <input type="hidden" name="seats" id="selectedSeats">
 
-        <div class="seats-container" style="display: flex; flex-wrap: wrap; width: 300px;">
+        <input type="hidden" name="movie_id" value="{{ $movie->id }}">
+        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+
+        {{-- Seat map --}}
+        <div class="seat-map d-grid gap-2 mb-4" style="grid-template-columns: repeat(10, 1fr); max-width:600px;">
             @foreach($seats as $seat)
-                <div class="seat {{ $seat->status == 'booked' ? 'booked' : 'available' }}" 
-                     data-seat="{{ $seat->number }}">
+                <label class="seat {{ $seat->status === 'booked' ? 'booked' : 'available' }}">
+                    <input 
+                        type="checkbox" 
+                        name="seats[]" 
+                        value="{{ $seat->id }}" 
+                        {{ $seat->status === 'booked' ? 'disabled' : '' }}
+                    >
                     {{ $seat->number }}
-                </div>
+                </label>
             @endforeach
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Book Now</button>
+        {{-- Legend --}}
+        <div class="mb-4">
+            <span class="badge bg-success">Available</span>
+            <span class="badge bg-danger">Booked</span>
+            <span class="badge bg-primary">Selected</span>
+        </div>
+
+        <button type="submit" class="btn btn-success">Booking</button>
+        <a href="{{ url()->previous() }}" class="btn btn-secondary">Batal</a>
     </form>
 </div>
+@endsection
 
+@push('styles')
 <style>
     .seat {
-        width: 40px;
-        height: 40px;
-        margin: 5px;
-        line-height: 40px;
-        text-align: center;
-        border-radius: 5px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 12px;
+        font-weight: bold;
         cursor: pointer;
         user-select: none;
+        transition: 0.2s;
+        text-align: center;
     }
-    .available {
-        background-color: #28a745;
+    .seat input {
+        display: none;
+    }
+    .seat.available {
+        background-color: #28a745; /* hijau */
         color: white;
     }
-    .booked {
-        background-color: #dc3545;
+    .seat.booked {
+        background-color: #dc3545; /* merah */
         color: white;
         cursor: not-allowed;
+        opacity: 0.7;
     }
-    .selected {
-        background-color: #ffc107;
-        color: black;
+    .seat input:checked + span,
+    .seat input:checked ~ * {
+        background-color: #0d6efd !important; /* biru */
+        color: white;
     }
 </style>
-
-<script>
-    const seats = document.querySelectorAll('.seat.available');
-    const selectedSeatsInput = document.getElementById('selectedSeats');
-    let selectedSeats = [];
-
-    seats.forEach(seat => {
-        seat.addEventListener('click', () => {
-            const seatNumber = seat.dataset.seat;
-            if (selectedSeats.includes(seatNumber)) {
-                // unselect
-                selectedSeats = selectedSeats.filter(s => s !== seatNumber);
-                seat.classList.remove('selected');
-            } else {
-                // select
-                selectedSeats.push(seatNumber);
-                seat.classList.add('selected');
-            }
-            selectedSeatsInput.value = selectedSeats.join(',');
-        });
-    });
-
-    // Submit form: convert comma string to array
-    document.getElementById('bookingForm').addEventListener('submit', function(e){
-        const seatsStr = selectedSeatsInput.value;
-        const seatsArray = seatsStr ? seatsStr.split(',') : [];
-        // buat input hidden multiple untuk laravel
-        if(seatsArray.length > 0){
-            selectedSeatsInput.remove();
-            seatsArray.forEach(s => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'seats[]';
-                input.value = s;
-                this.appendChild(input);
-            });
-        }
-    });
-</script>
-@endsection
+@endpush

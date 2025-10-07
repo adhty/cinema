@@ -31,6 +31,7 @@ class CityController extends Controller
     }
 
     public function show(City $city)
+ 
     {
         return view('admin.cities.show', compact('city'));
     }

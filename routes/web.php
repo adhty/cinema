@@ -14,6 +14,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\UserController;
 
 Route::middleware(['auth', 'isAdmin'])
     ->prefix('admin')
@@ -127,6 +128,16 @@ Route::middleware(['auth', 'isAdmin'])
             Route::get('/{actor}/edit', [ActorController::class, 'edit'])->name('edit');
             Route::put('/{actor}', [ActorController::class, 'update'])->name('update');
             Route::delete('/{actor}', [ActorController::class, 'destroy'])->name('destroy');
+        });
+
+        // Users
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('index');      // daftar user
+            Route::get('/create', [UserController::class, 'create'])->name('create'); // form tambah
+            Route::post('/store', [UserController::class, 'store'])->name('store');   // simpan data baru
+            Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit'); // form edit
+            Route::put('/{user}', [UserController::class, 'update'])->name('update'); // update data
+            Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy'); // hapus
         });
     });
 

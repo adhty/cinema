@@ -8,18 +8,20 @@ use Illuminate\Http\Request;
 
 class SeatsController extends Controller
 {
+    // List semua seats dengan filter dan pagination
     public function index(Request $request)
     {
         $query = Seats::with([
             'ticket.movie',
             'ticket.cinema',
             'ticket.studio',
-            'order.user'
+            'order.user' // perbaiki dari 'orders.user' karena relasi di model singular
         ]);
 
         // Filter berdasarkan ticket
-        if ($request->filled('ticket_id')) {
-            $query->where('ticket_id', $request->ticket_id);
+        $ticketId = $request->ticket_id ?? null; // ambil dari request
+        if ($ticketId) {
+            $query->where('ticket_id', $ticketId);
         }
 
         // Filter berdasarkan status
@@ -37,21 +39,25 @@ class SeatsController extends Controller
             ->orderBy('time')
             ->get();
 
-        return view('admin.seats.index', compact('seats', 'tickets'));
+        // Kirim ticketId ke view supaya Blade tidak error
+        return view('admin.seats.index', compact('seats', 'tickets', 'ticketId'));
     }
 
+
+    // Form create seat
     public function create()
     {
-        $tickets = Ticket::all(); // biar bisa pilih tiket mana kursinya
+        $tickets = Ticket::all();
         return view('admin.seats.create', compact('tickets'));
     }
 
+    // Store seat baru
     public function store(Request $request)
     {
         $request->validate([
             'ticket_id' => 'required|exists:tickets,id',
-            'number' => 'required|string|max:10',
-            'status' => 'required|in:available,booked'
+            'number'    => 'required|string|max:10',
+            'status'    => 'required|in:available,booked'
         ]);
 
         Seats::create($request->all());
@@ -60,32 +66,31 @@ class SeatsController extends Controller
             ->with('success', 'Kursi berhasil ditambahkan!');
     }
 
-    public function show($id)
+    // Show detail seat + relasi
+    public function show(Seats $seat)
     {
-        $seat = Seats::with([
+        $seat->load([
             'ticket.movie',
             'ticket.cinema',
             'ticket.studio',
-            'order.user'
-        ])->findOrFail($id);
+            'orders.user'
+        ]);
 
         return view('admin.seats.show', compact('seat'));
     }
 
+    // Menampilkan seats berdasarkan ticket
     public function byTicket($ticketId)
     {
-        $ticket = Ticket::with(['movie', 'cinema', 'studio', 'city'])
-            ->findOrFail($ticketId);
+        $ticket = Ticket::with(['movie', 'cinema', 'studio', 'city'])->findOrFail($ticketId);
 
-        // Ambil semua kursi untuk tiket ini
-        $seats = Seats::with(['order.user'])
+        $seats = Seats::with(['orders.user'])
             ->where('ticket_id', $ticketId)
             ->orderBy('number')
             ->get();
 
-        // Pisahkan kursi berdasarkan status
         $availableSeats = $seats->where('status', 'available');
-        $bookedSeats = $seats->where('status', 'booked');
+        $bookedSeats    = $seats->where('status', 'booked');
 
         return view('seats.by-ticket', compact(
             'ticket',

@@ -6,52 +6,57 @@ use Illuminate\Database\Eloquent\Model;
 
 class Seats extends Model
 {
-    protected $fillable = ['ticket_id', 'number', 'status', 'order_id'];
-
-    protected $casts = [
-        'status' => 'string',
+    // Fillable untuk mass assignment
+    protected $fillable = [
+        'movie_id',
+        'number',
+        'status',
+        'ticket_id',
+        'order_id',
     ];
 
+    // Casts
+    protected $casts = [
+        'status' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+    
+    // Relasi ke Movie
+    public function movie()
+    {
+        return $this->belongsTo(Movie::class, 'movie_id');
+    }
+
+    // Relasi ke Order
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    // Relasi ke Ticket
     public function ticket()
     {
         return $this->belongsTo(Ticket::class, 'ticket_id');
     }
 
-    public function order()
+    public function scopeBooked($query)
     {
-        return $this->belongsToMany(Order::class, 'order_seat', 'seat_id', 'order_id')
-            ->withTimestamps();
+        return $query->where('status', 'booked');
     }
 
-
-
-    // Check if seat is available
-    public function isAvailable()
-    {
-        return $this->status === 'available' && !$this->order;
-    }
-
-    // Mark seat as booked
-    public function markAsBooked()
-    {
-        $this->update(['status' => 'booked']);
-    }
-
-    // Mark seat as available
-    public function markAsAvailable()
-    {
-        $this->update(['status' => 'available']);
-    }
-
-    // Scope for available seats
     public function scopeAvailable($query)
     {
         return $query->where('status', 'available');
     }
 
-    // Scope for booked seats
-    public function scopeBooked($query)
+    public function isBooked(): bool
     {
-        return $query->where('status', 'booked');
+        return $this->status === 'booked';
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->status === 'available';
     }
 }

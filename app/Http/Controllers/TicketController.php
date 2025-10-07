@@ -48,7 +48,13 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::create($request->only([
-            'movie_id', 'studio_id', 'city_id', 'cinema_id', 'date', 'time', 'price'
+            'movie_id',
+            'studio_id',
+            'city_id',
+            'cinema_id',
+            'date',
+            'time',
+            'price'
         ]));
 
         if ($request->has('create_seats')) {
@@ -94,7 +100,13 @@ class TicketController extends Controller
 
         $ticket = Ticket::findOrFail($id);
         $ticket->update($request->only([
-            'movie_id', 'studio_id', 'city_id', 'cinema_id', 'date', 'time', 'price'
+            'movie_id',
+            'studio_id',
+            'city_id',
+            'cinema_id',
+            'date',
+            'time',
+            'price'
         ]));
 
         return redirect()->route('admin.tickets.show', $id)
@@ -124,19 +136,47 @@ class TicketController extends Controller
     private function createSeatsForTicket(Ticket $ticket)
     {
         $seatNumbers = [
-            'A1','A2','A3','A4','A5',
-            'B1','B2','B3','B4','B5',
-            'C1','C2','C3','C4','C5'
+            'A1',
+            'A2',
+            'A3',
+            'A4',
+            'A5',
+            'B1',
+            'B2',
+            'B3',
+            'B4',
+            'B5',
+            'C1',
+            'C2',
+            'C3',
+            'C4',
+            'C5'
         ];
 
-        foreach ($seatNumbers as $number) {
-            Seats::create([
+        // Ambil seat yang sudah ada
+        $existingSeats = Seats::where('ticket_id', $ticket->id)
+            ->pluck('number')
+            ->toArray();
+
+        // Filter seat yang belum ada
+        $newSeats = array_diff($seatNumbers, $existingSeats);
+
+        // Siapkan data untuk insert massal
+        $insertData = array_map(function ($number) use ($ticket) {
+            return [
                 'ticket_id' => $ticket->id,
                 'number' => $number,
-                'status' => 'available'
-            ]);
+                'status' => 'available',
+                'created_at' => now(),
+                'updated_at' => now()
+            ];
+        }, $newSeats);
+
+        if (!empty($insertData)) {
+            Seats::insert($insertData); // Mass insert
         }
     }
+
 
     // AJAX: jadwal tiket per cinema & tanggal
     public function getScheduleAjax($cinemaId, $date)

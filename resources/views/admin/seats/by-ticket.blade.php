@@ -2,86 +2,76 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">
-        Pilih Kursi untuk 
-        <strong>{{ $ticket->movie->title }}</strong> <br>
-        {{ $ticket->cinema->name }} - Studio {{ $ticket->studio->name }} <br>
-        {{ $ticket->date }} {{ $ticket->time }}
-    </h2>
+    <h2>Seats for Ticket #{{ $ticket->id }} - {{ $ticket->movie->title ?? 'N/A' }}</h2>
 
-    {{-- Grid kursi --}}
-    <div class="seat-grid" 
-         style="display: grid; grid-template-columns: repeat(10, 40px); gap: 10px;">
-        @foreach ($seats as $seat)
-            <div class="seat 
-                        {{ $seat->status === 'booked' ? 'booked' : 'available' }}"
-                 data-id="{{ $seat->id }}"
-                 data-status="{{ $seat->status }}">
-                {{ $seat->number }}
-            </div>
-        @endforeach
+    <div class="mb-3">
+        <a href="{{ route('admin.tickets.index') }}" class="btn btn-secondary">← Back to Tickets</a>
     </div>
 
-    {{-- Tombol booking --}}
-    <div class="mt-4">
-        <button id="bookSeatBtn" class="btn btn-primary" disabled>
-            Booking Kursi
-        </button>
+    <div class="row">
+        <!-- Available Seats -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Available Seats ({{ $availableSeats->count() }})</h5>
+                </div>
+                <div class="card-body">
+                    @if($availableSeats->count() > 0)
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($availableSeats as $seat)
+                                <span class="badge bg-success">{{ $seat->number }}</span>
+                            @endforeach
+                        </div>
+                    @else
+                        <p>No available seats.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Booked Seats -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Booked Seats ({{ $bookedSeats->count() }})</h5>
+                </div>
+                <div class="card-body">
+                    @if($bookedSeats->count() > 0)
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Seat</th>
+                                    <th>Customer</th>
+                                    <th>Payment</th>
+                                    <th>Booked At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($bookedSeats as $seat)
+                                    @foreach($seat->orders as $order)
+                                        <tr>
+                                            <td><span class="badge bg-secondary">{{ $seat->number }}</span></td>
+                                            <td>
+                                                <strong>{{ $order->user->name ?? 'N/A' }}</strong><br>
+                                                <small class="text-muted">{{ $order->user->email ?? 'N/A' }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ $order->payment === 'paid' ? 'success' : ($order->payment === 'pending' ? 'warning' : 'secondary') }}">
+                                                    {{ ucfirst($order->payment) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $order->created_at->format('d M Y H:i') }}</td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p>No booked seats.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
-{{-- Styling kursi --}}
-<style>
-    .seat {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 6px;
-        cursor: pointer;
-        border: 1px solid #ccc;
-    }
-    .seat.available { background-color: #e2f0d9; }  /* hijau muda */
-    .seat.booked { background-color: #f8d7da; cursor: not-allowed; } /* merah */
-    .seat.selected { background-color: #cce5ff; } /* biru */
-</style>
-
-{{-- Script AJAX --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    let selectedSeatId = null;
-
-    $(document).ready(function () {
-        // Klik kursi
-        $('.seat.available').on('click', function () {
-            $('.seat').removeClass('selected');
-            $(this).addClass('selected');
-            selectedSeatId = $(this).data('id');
-            $('#bookSeatBtn').prop('disabled', false);
-        });
-
-        // Klik tombol booking
-        $('#bookSeatBtn').on('click', function () {
-            if (!selectedSeatId) return;
-
-            $.ajax({
-                url: "{{ route('orders.store') }}", // pastikan route ini ada
-                method: "POST",
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    seat_id: selectedSeatId,
-                    user_id: "{{ auth()->id() }}" // kalau udah ada auth
-                },
-                success: function (response) {
-                    alert("Kursi berhasil dipesan!");
-                    location.reload();
-                },
-                error: function () {
-                    alert("Gagal booking kursi, coba lagi.");
-                }
-            });
-        });
-    });
-</script>
 @endsection

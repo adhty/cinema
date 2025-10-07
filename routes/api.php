@@ -1,81 +1,122 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CityController;
-use App\Http\Controllers\Api\StudioController;
-use App\Http\Controllers\Api\CinemaController;
-use App\Http\Controllers\Api\MovieController;
-use App\Http\Controllers\Api\PromoController;
-use App\Http\Controllers\Api\ActorController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\SeatController;
+use App\Http\Controllers\Api\{
+    CityController,
+    StudioController,
+    CinemaController,
+    MovieController,
+    PromoController,
+    ActorController,
+    OrderController,
+    SeatController,
+    TicketController
+};
 
-// Cities
 Route::middleware('api')->group(function () {
-    Route::get('/cities', [CityController::class, 'index']);
-    Route::post('/cities', [CityController::class, 'store']);
-    Route::get('/cities/{city}', [CityController::class, 'show']);
-    Route::put('/cities/{city}', [CityController::class, 'update']);
-    Route::delete('/cities/{city}', [CityController::class, 'destroy']);
-});
 
-// Studios
-Route::middleware('api')->group(function () {
-    Route::get('/studios', [StudioController::class, 'index']);
-    Route::post('/studios', [StudioController::class, 'store']);
-    Route::get('/studios/{studio}', [StudioController::class, 'show']);
-    Route::put('/studios/{studio}', [StudioController::class, 'update']);
-    Route::delete('/studios/{studio}', [StudioController::class, 'destroy']);
-});
+    /*
+    |--------------------------------------------------------------------------
+    | Cities
+    |--------------------------------------------------------------------------
+    */
+    Route::get('cities', [CityController::class, 'index']);
+    Route::post('cities', [CityController::class, 'store']);
+    Route::get('cities/{id}', [CityController::class, 'show']);
+    Route::put('cities/{id}', [CityController::class, 'update']);
+    Route::delete('cities/{id}', [CityController::class, 'destroy']);
 
-// Cinemas
-Route::middleware('api')->group(function () {
-    Route::get('/cinemas', [CinemaController::class, 'index']);
-    Route::post('/cinemas', [CinemaController::class, 'store']);
-    Route::get('/cinemas/{cinema}', [CinemaController::class, 'show']);
-    Route::put('/cinemas/{cinema}', [CinemaController::class, 'update']);
-    Route::delete('/cinemas/{cinema}', [CinemaController::class, 'destroy']);
-});
+    /*
+    |--------------------------------------------------------------------------
+    | Studios
+    |--------------------------------------------------------------------------
+    */
+    Route::get('studios', [StudioController::class, 'index']);
+    Route::post('studios', [StudioController::class, 'store']);
+    Route::get('studios/{id}', [StudioController::class, 'show']);
+    Route::put('studios/{id}', [StudioController::class, 'update']);
+    Route::delete('studios/{id}', [StudioController::class, 'destroy']);
 
-// Movies
-Route::middleware('api')->group(function () {
-    Route::get('/movies', [MovieController::class, 'index']);
-    Route::post('/movies', [MovieController::class, 'store']);
-    Route::get('/movies/{movie}', [MovieController::class, 'show']);
-    Route::put('/movies/{movie}', [MovieController::class, 'update']);
-    Route::delete('/movies/{movie}', [MovieController::class, 'destroy']);
-});
+    /*
+    |--------------------------------------------------------------------------
+    | Cinemas
+    |--------------------------------------------------------------------------
+    */
+    Route::get('cinemas', [CinemaController::class, 'index']);
+    Route::post('cinemas', [CinemaController::class, 'store']);
+    Route::get('cinemas/{id}', [CinemaController::class, 'show']);
+    Route::put('cinemas/{id}', [CinemaController::class, 'update']);
+    Route::delete('cinemas/{id}', [CinemaController::class, 'destroy']);
 
-// Promos
-Route::middleware('api')->group(function () {
-    Route::get('/promos', [PromoController::class, 'index']);
-    Route::post('/promos', [PromoController::class, 'store']);
-    Route::get('/promos/{promo}', [PromoController::class, 'show']);
-    Route::put('/promos/{promo}', [PromoController::class, 'update']);
-    Route::delete('/promos/{promo}', [PromoController::class, 'destroy']);
-});
+    /*
+    |--------------------------------------------------------------------------
+    | Movies
+    |--------------------------------------------------------------------------
+    */
+    Route::get('movies', [MovieController::class, 'index']);
+    Route::post('movies', [MovieController::class, 'store']);
+    Route::get('movies/{id}', [MovieController::class, 'show']);
+    Route::put('movies/{id}', [MovieController::class, 'update']);
+    Route::delete('movies/{id}', [MovieController::class, 'destroy']);
 
-// Actors
-Route::middleware('api')->group(function () {
-    Route::get('/actors', [ActorController::class, 'index']);
-    Route::post('/actors', [ActorController::class, 'store']);
-    Route::get('/actors/{actor}', [ActorController::class, 'show']);
-    Route::put('/actors/{actor}', [ActorController::class, 'update']);
-    Route::delete('/actors/{actor}', [ActorController::class, 'destroy']);
-});
+    /*
+    |--------------------------------------------------------------------------
+    | Promos
+    |--------------------------------------------------------------------------
+    */
+    Route::get('promos', [PromoController::class, 'index']);
+    Route::post('promos', [PromoController::class, 'store']);
+    Route::get('promos/{id}', [PromoController::class, 'show']);
+    Route::put('promos/{id}', [PromoController::class, 'update']);
+    Route::delete('promos/{id}', [PromoController::class, 'destroy']);
 
-// Orders
-Route::middleware('api')->group(function () {
-    Route::get('/orders', [OrderController::class, 'index']); // Get orders by user_id (query param)
-    Route::post('/orders', [OrderController::class, 'store']); // Create new order
-    Route::get('/orders/{id}', [OrderController::class, 'show']); // Get specific order
-    Route::put('/orders/{id}/payment', [OrderController::class, 'updatePayment']); // Update payment status
-    Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']); // Cancel order
-});
+    /*
+    |--------------------------------------------------------------------------
+    | Actors
+    |--------------------------------------------------------------------------
+    */
+    Route::get('actors', [ActorController::class, 'index']);
+    Route::post('actors', [ActorController::class, 'store']);
+    Route::get('actors/{id}', [ActorController::class, 'show']);
+    Route::put('actors/{id}', [ActorController::class, 'update']);
+    Route::delete('actors/{id}', [ActorController::class, 'destroy']);
 
-// Seats
-Route::middleware('api')->group(function () {
-Route::get('/seats/available', [SeatController::class, 'available']); 
-Route::get('/seats/ticket/{ticketId}', [SeatController::class, 'byTicket']); 
-Route::get('/seats/{id}', [SeatController::class, 'show']);
+    /*
+    |--------------------------------------------------------------------------
+    | Orders
+    |--------------------------------------------------------------------------
+    */
+    Route::get('orders', [OrderController::class, 'index']); // Bisa filter by user_id
+    Route::post('orders', [OrderController::class, 'store']);
+    Route::get('orders/{id}', [OrderController::class, 'show']);
+    Route::put('orders/{id}/payment', [OrderController::class, 'updatePayment']);
+    Route::put('orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Seats
+    |--------------------------------------------------------------------------
+    */
+    // User Side
+    Route::get('seats', [SeatController::class, 'index']);
+    Route::get('seats/{id}', [SeatController::class, 'show']);
+    Route::get('seats/ticket/{ticketId}', [SeatController::class, 'byTicket']);
+    Route::get('seats/available', [SeatController::class, 'available']); // ?ticket_id=xx
+
+    // Admin Side
+    Route::post('seats', [SeatController::class, 'store']);
+    Route::put('seats/{id}', [SeatController::class, 'update']);
+    Route::delete('seats/{id}', [SeatController::class, 'destroy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tickets
+    |--------------------------------------------------------------------------
+    */
+    Route::get('tickets', [TicketController::class, 'index']);            // List semua tiket
+    Route::get('tickets/{id}', [TicketController::class, 'show']);        // Detail tiket
+    Route::get('tickets/{id}/seats', [TicketController::class, 'seats']); // Kursi per tiket
+    Route::post('tickets', [TicketController::class, 'store']);           // Tambah tiket
+    Route::put('tickets/{id}', [TicketController::class, 'update']);      // Update tiket
+    Route::delete('tickets/{id}', [TicketController::class, 'destroy']);  // Hapus tiket
 });

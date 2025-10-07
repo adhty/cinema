@@ -15,7 +15,7 @@ class Ticket extends Model
 
     protected $casts = [
         'date' => 'date',
-        'time' => 'datetime:H:i',
+        'time' => 'string',
         'price' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -46,24 +46,29 @@ class Ticket extends Model
         return $this->hasMany(Seats::class);
     }
 
-    public function orders(): HasManyThrough
-    {
-        return $this->hasManyThrough(Order::class, Seats::class, 'ticket_id', 'seat_id');
-    }
+    // (Opsional) relasi orders jika dibutuhkan nanti
+    // public function orders(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(
+    //         Order::class,
+    //         Seat::class,
+    //         'ticket_id',
+    //         'id',
+    //         'id',
+    //         'order_id'
+    //     );
+    // }
 
-    // Scope for upcoming shows
     public function scopeUpcoming($query)
     {
         return $query->where('date', '>=', today());
     }
 
-    // Scope for today's shows
     public function scopeToday($query)
     {
         return $query->where('date', today());
     }
 
-    // Scope for available tickets (with available seats)
     public function scopeAvailable($query)
     {
         return $query->whereHas('seats', function($q) {
@@ -71,13 +76,11 @@ class Ticket extends Model
         });
     }
 
-    // Accessor untuk format waktu yang lebih readable
     public function getFormattedTimeAttribute(): string
     {
-        return $this->time->format('H:i');
+        return $this->time;
     }
 
-    // Accessor untuk menghitung seat yang tersedia
     public function getAvailableSeatsCountAttribute(): int
     {
         return $this->seats()->where('status', 'available')->count();

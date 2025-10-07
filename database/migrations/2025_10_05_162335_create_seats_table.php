@@ -14,13 +14,11 @@ return new class extends Migration
         Schema::create('seats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ticket_id')->constrained('tickets')->cascadeOnDelete();
-            $table->foreignId('order_id')->nullable()->constrained('orders')->nullOnDelete();
-            $table->string('number'); // A1, A2, B1 dst
+            $table->string('number'); // contoh: A1, B2, dll
             $table->enum('status', ['available', 'booked'])->default('available');
             $table->timestamps();
 
-            // Satu kursi unik per tiket (jadwal)
-            $table->unique(['ticket_id', 'number']);
+            $table->unique(['ticket_id', 'number']); // supaya nomor kursi tidak ganda dalam satu tiket
         });
     }
 
