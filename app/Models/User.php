@@ -25,6 +25,7 @@ class User extends Authenticatable
         'birthdate',
         'pin',
         'password',
+        'role',
         'is_admin',
     ];
 

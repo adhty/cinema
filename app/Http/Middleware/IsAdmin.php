@@ -16,10 +16,10 @@ class IsAdmin
             return redirect()->route('login');
         }
 
-        // kalau user login tapi bukan admin → forbidden
-        if (!Auth::user()->is_admin) {
+        if (Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized.');
         }
+
 
         return $next($request);
     }

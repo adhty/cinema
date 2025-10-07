@@ -17,25 +17,28 @@
 
                 <div class="mb-3">
                     <label for="name" class="form-label fw-semibold">Nama Lengkap</label>
-                    <input type="text" name="name" id="name" class="form-control" value="{{ $user->name }}" required>
+                    <input type="text" name="name" id="name" class="form-control"
+                           value="{{ $user->name }}" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label fw-semibold">Email</label>
-                    <input type="email" name="email" id="email" class="form-control" value="{{ $user->email }}" required>
+                    <input type="email" name="email" id="email" class="form-control"
+                           value="{{ $user->email }}" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="role" class="form-label fw-semibold">Role</label>
                     <select name="role" id="role" class="form-select" required>
-                        <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>User</option>
+                        <option value="Admin" {{ $user->role == 'Admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="User" {{ $user->role == 'User' ? 'selected' : '' }}>User</option>
                     </select>
                 </div>
 
                 <div class="mb-3">
                     <label for="password" class="form-label fw-semibold">Password (kosongkan jika tidak diubah)</label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan password baru jika ingin mengubah">
+                    <input type="password" name="password" id="password" class="form-control"
+                           placeholder="Masukkan password baru jika ingin mengubah">
                 </div>
 
                 <div class="text-end">
