@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Promo Details</h1>
-        <a href="{{ route('promos.index') }}" class="btn btn-secondary">Back to Promos</a>
+        <a href="{{ route('admin.promos.index') }}" class="btn btn-secondary">Back to Promos</a>
     </div>
 
     <div class="card shadow mb-4">
@@ -27,8 +27,8 @@
                     <p>{{ $promo->description ?? 'No description' }}</p>
                     <p><strong>Term & Condition:</strong></p>
                     <p>{{ $promo->term_condition ?? 'No term & condition' }}</p>
-                    <a href="{{ route('promos.edit', $promo) }}" class="btn btn-warning">Edit</a>
-                    <form action="{{ route('promos.destroy', $promo) }}" method="POST" style="display: inline-block;">
+                    <a href="{{ route('admin.promos.edit', $promo) }}" class="btn btn-warning">Edit</a>
+                    <form action="{{ route('admin.promos.destroy', $promo) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>

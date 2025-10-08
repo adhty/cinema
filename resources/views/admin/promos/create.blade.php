@@ -4,7 +4,7 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Create Promo</h1>
-        <a href="{{ route('promos.index') }}" class="btn btn-secondary">Back to Promos</a>
+        <a href="{{ route('admin.promos.index') }}" class="btn btn-secondary">Back to Promos</a>
     </div>
 
     <div class="card shadow mb-4">
@@ -12,7 +12,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Promo Form</h6>
         </div>
         <div class="card-body">
-            <form action="{{ route('promos.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.promos.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group">
                     <label for="cover">Cover Image</label>

@@ -65,7 +65,7 @@ class PromoController extends Controller
  
         $promo->save();
  
-        return redirect()->route('promos.index')->with('success', 'Promo created successfully.');
+        return redirect()->route('admin.promos.index')->with('success', 'Promo created successfully.');
     }
  
     /**
@@ -114,7 +114,7 @@ class PromoController extends Controller
  
         $promo->save();
  
-        return redirect()->route('promos.index')->with('success', 'Promo updated successfully.');
+        return redirect()->route('admin.promos.index')->with('success', 'Promo updated successfully.');
     }
  
     /**
@@ -128,6 +128,6 @@ class PromoController extends Controller
         }
         
         $promo->delete();
-        return redirect()->route('promos.index')->with('success', 'Promo deleted successfully.');
+        return redirect()->route('admin.promos.index')->with('success', 'Promo deleted successfully.');
     }
 }

@@ -8,7 +8,6 @@ class Seats extends Model
 {
     // Fillable untuk mass assignment
     protected $fillable = [
-        'movie_id',
         'number',
         'status',
         'ticket_id',
@@ -22,10 +21,17 @@ class Seats extends Model
         'updated_at' => 'datetime',
     ];
     
-    // Relasi ke Movie
+    // Relasi ke Movie melalui Ticket
     public function movie()
     {
-        return $this->belongsTo(Movie::class, 'movie_id');
+        return $this->hasOneThrough(
+            Movie::class,        // Final target model
+            Ticket::class,       // Intermediate model
+            'ticket_id',         // Foreign key on seats table (to tickets)
+            'id',                // Foreign key on movies table
+            'id',                // Local key on seats table
+            'movie_id'          // Foreign key on tickets table (to movies)
+        );
     }
 
     // Relasi ke Order

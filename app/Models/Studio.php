@@ -12,7 +12,7 @@ class Studio extends Model
 {
     use HasFactory;
 
-        protected $fillable = ['cinema_id', 'name', 'weekday_price', 'friday_price', 'weekend_price'];
+        protected $fillable = ['cinema_id', 'name', 'type', 'weekday_price', 'friday_price', 'weekend_price'];
 
 
     protected $casts = [
@@ -37,7 +37,7 @@ class Studio extends Model
 
     public function seats(): HasMany
     {
-        return $this->hasMany(Seats::class, 'studio_id');
+        return $this->hasManyThrough(Seats::class, Ticket::class, 'studio_id', 'ticket_id');
     }
 
     // Scope untuk filter berdasarkan tipe
