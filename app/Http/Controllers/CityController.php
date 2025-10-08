@@ -9,10 +9,25 @@ class CityController extends Controller
 {
     public function index(Request $request)
     {
-        $cities = City::orderBy('name')->get();
+        $query = City::query();
 
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->get('sort') === 'asc') {
+            $query->orderBy('name', 'asc');
+        } elseif ($request->get('sort') === 'desc') {
+            $query->orderBy('name', 'desc');
+        } else {
+            $query->orderBy('name'); // default
+        }
+
+        $cities = $query->paginate(10);
         return view('admin.cities.index', compact('cities'));
     }
+
+
 
     public function create()
     {
@@ -31,7 +46,7 @@ class CityController extends Controller
     }
 
     public function show(City $city)
- 
+
     {
         return view('admin.cities.show', compact('city'));
     }

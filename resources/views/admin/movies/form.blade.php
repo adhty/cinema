@@ -126,3 +126,39 @@
         </div>
     </div>
 </div>
+
+{{-- 🖼️ COVER UPLOAD --}}
+<div class="mb-3">
+    <label for="cover" class="form-label">Cover</label>
+    <input type="file" class="form-control @error('cover') is-invalid @enderror" 
+           id="cover" name="cover" accept="image/*" onchange="previewCover(event)">
+    @error('cover')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+
+    <div class="mt-2">
+        <img id="coverPreview" 
+             src="{{ isset($movie) && $movie->cover ? asset('storage/'.$movie->cover) : '' }}" 
+             alt="Cover Preview" 
+             class="img-thumbnail {{ isset($movie) && $movie->cover ? '' : 'd-none' }}" 
+             style="max-height: 150px;">
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function previewCover(event) {
+        const coverInput = event.target;
+        const preview = document.getElementById('coverPreview');
+
+        if (coverInput.files && coverInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+            }
+            reader.readAsDataURL(coverInput.files[0]);
+        }
+    }
+</script>
+@endpush

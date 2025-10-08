@@ -11,14 +11,27 @@ class CinemaController extends Controller
 {
     public function index(Request $request)
     {
-        $cinemas = Cinema::with(['city', 'studios.cinemaPrice'])
-            ->orderBy('name')
-            ->get();
+        $query = Cinema::with('city');
 
-        $cities = City::orderBy('name')->get();
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
 
-        return view('admin.cinemas.index', compact('cinemas', 'cities'));
+        if ($request->name_sort) {
+            $query->orderBy('name', $request->name_sort);
+        }
+
+        if ($request->city_sort) {
+            $query->join('cities', 'cinemas.city_id', '=', 'cities.id')
+                ->orderBy('cities.name', $request->city_sort)
+                ->select('cinemas.*');
+        }
+
+        // ⚡ PENTING: gunakan paginate, bukan get()
+        $cinemas = $query->paginate(10); // <-- ini
+        return view('admin.cinemas.index', compact('cinemas'));
     }
+
 
     public function create(Request $request)
     {
