@@ -15,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 
 Route::middleware(['auth', 'isAdmin'])
     ->prefix('admin')
@@ -22,6 +23,16 @@ Route::middleware(['auth', 'isAdmin'])
     ->group(function () {
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        //roles & permissions management
+        Route::prefix('roles')->name('roles.')->group(function () {
+            Route::get('/', [RoleController::class, 'index'])->name('index');      // list roles
+            Route::get('/create', [RoleController::class, 'create'])->name('create');  // form tambah
+            Route::post('/store', [RoleController::class, 'store'])->name('store');    // simpan data baru
+            Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit'); // form edit
+            Route::put('/{role}', [RoleController::class, 'update'])->name('update');  // update role
+            Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy'); // hapus role
+        });
 
         // Tickets
         Route::prefix('tickets')->name('tickets.')->group(function () {
