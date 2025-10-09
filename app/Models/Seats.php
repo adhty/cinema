@@ -6,39 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Seats extends Model
 {
-    // Fillable untuk mass assignment
     protected $fillable = [
         'number',
         'status',
         'ticket_id',
-        'order_id',
     ];
 
-    // Casts
     protected $casts = [
         'status' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-    
-    // Relasi ke Movie melalui Ticket
-    public function movie()
-    {
-        return $this->hasOneThrough(
-            Movie::class,        // Final target model
-            Ticket::class,       // Intermediate model
-            'ticket_id',         // Foreign key on seats table (to tickets)
-            'id',                // Foreign key on movies table
-            'id',                // Local key on seats table
-            'movie_id'          // Foreign key on tickets table (to movies)
-        );
-    }
-
-    // Relasi ke Order
-    public function order()
-    {
-        return $this->belongsTo(Order::class, 'order_id');
-    }
 
     // Relasi ke Ticket
     public function ticket()
@@ -46,6 +24,27 @@ class Seats extends Model
         return $this->belongsTo(Ticket::class, 'ticket_id');
     }
 
+    // Relasi ke Orders
+    public function order
+    ()
+    {
+        return $this->hasMany(Order::class, 'seat_id');
+    }
+
+    // Relasi ke Movie lewat Ticket
+    public function movie()
+    {
+        return $this->hasOneThrough(
+            Movie::class,
+            Ticket::class,
+            'id',         // key di tickets
+            'id',         // key di movies
+            'ticket_id',  // key di seats
+            'movie_id'    // key di tickets
+        );
+    }
+
+    // Scope helper
     public function scopeBooked($query)
     {
         return $query->where('status', 'booked');
@@ -56,6 +55,7 @@ class Seats extends Model
         return $query->where('status', 'available');
     }
 
+    // Helper method
     public function isBooked(): bool
     {
         return $this->status === 'booked';

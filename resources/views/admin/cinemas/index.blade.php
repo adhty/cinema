@@ -3,128 +3,130 @@
 @section('title', 'Daftar Cinema')
 
 @section('content')
-<div class="container py-4">
+<div class="container mx-auto py-4">
 
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Daftar Cinema</h2>
-        <a href="{{ route('admin.cinemas.create') }}" class="btn btn-success">
-            <i class="bi bi-plus-lg"></i> Tambah Cinema
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-2xl">Daftar Cinema</h2>
+        <a href="{{ route('admin.cinemas.create') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center">
+            <i class="bi bi-plus-lg mr-1"></i> Tambah Cinema
         </a>
     </div>
 
     {{-- Alert sukses --}}
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-3" role="alert">
+        <strong class="font-bold"><i class="bi bi-check-circle-fill"></i></strong>
+        <span class="block sm:inline">{{ session('success') }}</span>
+        <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <button type="button" onclick="this.parentElement.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </span>
     </div>
     @endif
 
     {{-- Search bar --}}
     <form action="{{ route('admin.cinemas.index') }}" method="GET" class="mb-3">
-        <div class="input-group">
-            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama cinema...">
-            <button class="btn btn-outline-primary" type="submit">
+        <div class="flex">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama cinema..."
+                   class="w-full px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring focus:border-blue-300">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r">
                 <i class="bi bi-search"></i>
             </button>
         </div>
     </form>
 
     {{-- Card Tabel --}}
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
-                    <thead class="table-dark text-center">
-                        <tr>
-                            <th style="width:5%;">#</th>
-                            @php
-                                $nameSort = request('name_sort') === 'asc' ? 'desc' : 'asc';
-                                $citySort = request('city_sort') === 'asc' ? 'desc' : 'asc';
-                            @endphp
-                            <th style="width:100px;">Gambar</th>
-                            <th>
-                                <a href="{{ route('admin.cinemas.index', array_merge(request()->all(), ['name_sort' => $nameSort])) }}" class="text-white text-decoration-none">
-                                    Nama
-                                    @if(request('name_sort') === 'asc')
-                                        <i class="bi bi-arrow-up-short"></i>
-                                    @elseif(request('name_sort') === 'desc')
-                                        <i class="bi bi-arrow-down-short"></i>
-                                    @endif
+    <div class="bg-white shadow rounded overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead class="bg-gray-800 text-white text-center">
+                    <tr>
+                        <th class="w-1/12 px-2 py-2">#</th>
+                        @php
+                            $nameSort = request('name_sort') === 'asc' ? 'desc' : 'asc';
+                            $citySort = request('city_sort') === 'asc' ? 'desc' : 'asc';
+                        @endphp
+                        <th class="w-24 px-2 py-2">Gambar</th>
+                        <th class="px-2 py-2">
+                            <a href="{{ route('admin.cinemas.index', array_merge(request()->all(), ['name_sort' => $nameSort])) }}" class="text-white hover:underline">
+                                Nama
+                                @if(request('name_sort') === 'asc')
+                                    <i class="bi bi-arrow-up-short"></i>
+                                @elseif(request('name_sort') === 'desc')
+                                    <i class="bi bi-arrow-down-short"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th class="px-2 py-2">
+                            <a href="{{ route('admin.cinemas.index', array_merge(request()->all(), ['city_sort' => $citySort])) }}" class="text-white hover:underline">
+                                Kota
+                                @if(request('city_sort') === 'asc')
+                                    <i class="bi bi-arrow-up-short"></i>
+                                @elseif(request('city_sort') === 'desc')
+                                    <i class="bi bi-arrow-down-short"></i>
+                                @endif
+                            </a>
+                        </th>
+                        <th class="px-2 py-2">Alamat</th>
+                        <th class="w-44 px-2 py-2">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center divide-y divide-gray-200">
+                    @forelse($cinemas as $cinema)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-2 py-2">{{ $loop->iteration + ($cinemas->currentPage() - 1) * $cinemas->perPage() }}</td>
+                        <td class="px-2 py-2">
+                            @if($cinema->image)
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ $cinema->id }}">
+                                    <img src="{{ asset('storage/'.$cinema->image) }}" 
+                                         alt="{{ $cinema->name }}" 
+                                         class="rounded w-20 h-12 object-cover mx-auto">
                                 </a>
-                            </th>
-                            <th>
-                                <a href="{{ route('admin.cinemas.index', array_merge(request()->all(), ['city_sort' => $citySort])) }}" class="text-white text-decoration-none">
-                                    Kota
-                                    @if(request('city_sort') === 'asc')
-                                        <i class="bi bi-arrow-up-short"></i>
-                                    @elseif(request('city_sort') === 'desc')
-                                        <i class="bi bi-arrow-down-short"></i>
-                                    @endif
-                                </a>
-                            </th>
-                            <th>Alamat</th>
-                            <th style="width:180px;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($cinemas as $cinema)
-                        <tr>
-                            <td class="text-center">{{ $loop->iteration + ($cinemas->currentPage() - 1) * $cinemas->perPage() }}</td>
-                            <td class="text-center">
-                                @if($cinema->image)
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ $cinema->id }}">
-                                        <img src="{{ asset('storage/'.$cinema->image) }}" 
-                                             alt="{{ $cinema->name }}" 
-                                             width="80" height="50" 
-                                             class="rounded">
-                                    </a>
 
-                                    {{-- Modal Zoom Image --}}
-                                    <div class="modal fade" id="imageModal{{ $cinema->id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-body p-0">
-                                                    <img src="{{ asset('storage/'.$cinema->image) }}" class="img-fluid w-100">
-                                                </div>
+                                {{-- Modal Zoom Image --}}
+                                <div class="modal fade" id="imageModal{{ $cinema->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-body p-0">
+                                                <img src="{{ asset('storage/'.$cinema->image) }}" class="w-full">
                                             </div>
                                         </div>
                                     </div>
-                                @else
-                                    <span class="text-muted">No Image</span>
-                                @endif
-                            </td>
-                            <td>{{ $cinema->name }}</td>
-                            <td>{{ $cinema->city->name ?? '-' }}</td>
-                            <td>{{ $cinema->address }}</td>
-                            <td class="text-center">
-                                <a href="{{ route('admin.cinemas.edit', $cinema->id) }}" class="btn btn-sm btn-warning me-1">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
-                                <form action="{{ route('admin.cinemas.destroy', $cinema->id) }}" method="POST" class="d-inline"
-                                      onsubmit="return confirm('Hapus cinema ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Hapus
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-3">Belum ada data cinema</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            @else
+                                <span class="text-gray-400">No Image</span>
+                            @endif
+                        </td>
+                        <td class="px-2 py-2">{{ $cinema->name }}</td>
+                        <td class="px-2 py-2">{{ $cinema->city->name ?? '-' }}</td>
+                        <td class="px-2 py-2">{{ $cinema->address }}</td>
+                        <td class="px-2 py-2 space-x-1">
+                            <a href="{{ route('admin.cinemas.edit', $cinema->id) }}" class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded inline-flex items-center">
+                                <i class="bi bi-pencil-square mr-1"></i> Edit
+                            </a>
+                            <form action="{{ route('admin.cinemas.destroy', $cinema->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus cinema ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded inline-flex items-center">
+                                    <i class="bi bi-trash mr-1"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-gray-400 py-3">Belum ada data cinema</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
     {{-- Pagination --}}
-    <div class="d-flex justify-content-end mt-3">
+    <div class="flex justify-end mt-3">
         {{ $cinemas->withQueryString()->links() }}
     </div>
 

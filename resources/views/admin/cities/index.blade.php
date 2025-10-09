@@ -3,78 +3,86 @@
 @section('title', 'Daftar Kota')
 
 @section('content')
-<div class="container py-4">
+<div class="px-6 py-6 space-y-6">
 
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Daftar Kota</h2>
-        <a href="{{ route('admin.cities.create') }}" class="btn btn-success">
-            <i class="bi bi-plus-lg"></i> Tambah Kota
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <h2 class="text-2xl font-bold text-gray-800">Daftar Kota</h2>
+        <a href="{{ route('admin.cities.create') }}"
+           class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium shadow transition">
+            <i class="fa-solid fa-plus"></i> Tambah Kota
         </a>
     </div>
 
     {{-- Alert sukses --}}
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+        <div class="flex items-center justify-between bg-green-100 border border-green-300 text-green-800 rounded-lg p-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-check text-green-600"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-green-800 hover:text-green-900">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
     @endif
 
     {{-- Search bar --}}
-    <form action="{{ route('admin.cities.index') }}" method="GET" class="mb-3">
-        <div class="input-group">
-            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama kota...">
-            <button class="btn btn-outline-primary" type="submit">
-                <i class="bi bi-search"></i> Cari
-            </button>
-        </div>
+    <form action="{{ route('admin.cities.index') }}" method="GET" class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <input type="text" name="search" value="{{ request('search') }}"
+               placeholder="Cari nama kota..."
+               class="w-full sm:w-auto flex-grow rounded-lg border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition p-2.5">
+        <button type="submit"
+                class="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg font-medium transition">
+            <i class="fa-solid fa-magnifying-glass"></i> Cari
+        </button>
     </form>
 
-    {{-- Card Tabel --}}
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark text-center">
-                        <tr>
-                            <th style="width: 5%;">#</th>
-                            <th>Nama Kota</th>
-                            <th style="width: 20%;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($cities as $city)
-                        <tr>
-                            <td class="text-center">{{ $loop->iteration + ($cities->currentPage() - 1) * $cities->perPage() }}</td>
-                            <td>{{ $city->name }}</td>
-                            <td class="text-center">
-                                <a href="{{ route('admin.cities.edit', $city->id) }}" class="btn btn-sm btn-warning me-1">
-                                    <i class="bi bi-pencil-square"></i> Edit
+    {{-- Tabel --}}
+    <div class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm text-left border-collapse">
+            <thead class="bg-gray-100 text-gray-700 uppercase text-sm">
+                <tr>
+                    <th class="px-4 py-3 text-center w-12">#</th>
+                    <th class="px-4 py-3">Nama Kota</th>
+                    <th class="px-4 py-3 text-center w-32">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($cities as $city)
+                    <tr class="border-t hover:bg-gray-50">
+                        <td class="px-4 py-3 text-center font-medium text-gray-700">
+                            {{ $loop->iteration + ($cities->currentPage() - 1) * $cities->perPage() }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-800">{{ $city->name }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex justify-center gap-2">
+                                <a href="{{ route('admin.cities.edit', $city->id) }}"
+                                   class="text-yellow-500 hover:text-yellow-600 transition">
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                <form action="{{ route('admin.cities.destroy', $city->id) }}" method="POST" class="d-inline"
-                                      onsubmit="return confirm('Yakin mau dihapus?')">
+                                <form action="{{ route('admin.cities.destroy', $city->id) }}"
+                                      method="POST" onsubmit="return confirm('Yakin mau dihapus?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Hapus
+                                    <button type="submit" class="text-red-500 hover:text-red-600 transition">
+                                        <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="3" class="text-center text-muted py-3">Belum ada data kota</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="text-center text-gray-400 py-6">Belum ada data kota</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
     {{-- Pagination --}}
-    <div class="d-flex justify-content-end mt-3">
+    <div class="flex justify-end">
         {{ $cities->withQueryString()->links() }}
     </div>
 </div>
