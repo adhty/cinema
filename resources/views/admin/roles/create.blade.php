@@ -22,7 +22,7 @@
 
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left border-collapse">
-                    <thead class="bg-gray-100 border-b">
+                    <thea  d class="bg-gray-100 border-b">
                         <tr class="text-gray-700">
                             <th class="p-3 border-r font-semibold">Menu Name</th>
                             <th class="p-3 text-center">View</th>

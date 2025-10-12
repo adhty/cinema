@@ -4,7 +4,7 @@
 <div class="max-w-6xl mx-auto mt-10 bg-white rounded-2xl shadow p-8">
     <h2 class="text-2xl font-bold mb-6 text-purple-700">Edit Hak Akses: {{ $role->name }}</h2>
 
-    <form action="{{ route('roles.update', $role->id) }}" method="POST">
+    <form action="{{ route('admin.roles.update', $role->id) }}" method="POST">
         @csrf
 
         <!-- Role Name -->

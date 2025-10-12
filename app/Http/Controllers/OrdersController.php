@@ -13,30 +13,34 @@ use Illuminate\Support\Facades\DB;
 class OrdersController extends Controller
 {
     // 🔹 List semua order
-    public function index(Request $request)
+        public function index(Request $request)
     {
-        $query = Order::with(['user', 'seat.ticket.movie']);
+        $query = Order::with(['user', 'movie', 'seats']);
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if ($request->filled('search')) {
+            $query->whereHas('user', fn($q) =>
+                $q->where('name', 'like', "%{$request->search}%")
+            )->orWhereHas('movie', fn($q) =>
+                $q->where('title', 'like', "%{$request->search}%")
+            );
         }
 
-        if ($request->filled('payment')) {
-            $query->where('payment', $request->payment);
+        if ($request->filled('status')) {
+            $query->where('payment', $request->status);
         }
 
         $orders = $query->latest()->paginate(10);
-        $users  = User::select('id', 'name', 'email')->get();
 
         $stats = [
-            'total'     => Order::count(),
-            'pending'   => Order::where('payment', 'pending')->count(),
-            'paid'      => Order::where('payment', 'paid')->count(),
+            'total' => Order::count(),
+            'pending' => Order::where('payment', 'pending')->count(),
+            'paid' => Order::where('payment', 'paid')->count(),
             'cancelled' => Order::where('payment', 'cancelled')->count(),
         ];
 
-        return view('admin.orders.index', compact('orders', 'users', 'stats'));
+        return view('admin.orders.index', compact('orders', 'stats'));
     }
+
 
     // 🔹 Form untuk membuat order manual (opsional)
     public function create()
@@ -132,4 +136,36 @@ class OrdersController extends Controller
 
         return response()->json($bookedSeatIds);
     }
+
+    public function exportExcel(Request $request)
+{
+    return Excel::download(new OrdersExport($request), 'orders.xlsx');
 }
+
+public function exportPdf(Request $request)
+{
+    $orders = $this->filteredOrders($request)->get();
+    $pdf = Pdf::loadView('admin.orders.pdf', compact('orders'));
+    return $pdf->download('orders.pdf');
+}
+
+    private function filteredOrders(Request $request)
+    {
+        $query = Order::with(['user', 'movie', 'seats']);
+
+        if ($request->filled('search')) {
+            $query->whereHas('user', fn($q) =>
+                $q->where('name', 'like', "%{$request->search}%")
+            )->orWhereHas('movie', fn($q) =>
+                $q->where('title', 'like', "%{$request->search}%")
+            );
+        }
+
+        if ($request->filled('status')) {
+            $query->where('payment', $request->status);
+        }
+
+        return $query->latest();
+    }
+}
+

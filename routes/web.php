@@ -24,14 +24,14 @@ Route::middleware(['auth', 'isAdmin'])
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        //roles & permissions management
+        // Roles
         Route::prefix('roles')->name('roles.')->group(function () {
-            Route::get('/', [RoleController::class, 'index'])->name('index');      // list roles
-            Route::get('/create', [RoleController::class, 'create'])->name('create');  // form tambah
-            Route::post('/store', [RoleController::class, 'store'])->name('store');    // simpan data baru
-            Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit'); // form edit
-            Route::put('/{role}', [RoleController::class, 'update'])->name('update');  // update role
-            Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy'); // hapus role
+            Route::get('/', [RoleController::class, 'index'])->name('index');
+            Route::get('/create', [RoleController::class, 'create'])->name('create');
+            Route::post('/store', [RoleController::class, 'store'])->name('store');
+            Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
+            Route::put('/{role}', [RoleController::class, 'update'])->name('update');
+            Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
         });
 
         // Tickets
@@ -59,6 +59,8 @@ Route::middleware(['auth', 'isAdmin'])
         // Orders
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [OrdersController::class, 'index'])->name('index');
+            Route::get('/export-excel', [OrderController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export-pdf', [OrderController::class, 'exportPdf'])->name('export.pdf');
             Route::get('/seats/available', [OrdersController::class, 'availableSeats'])->name('seats.available');
             Route::get('/create', [OrdersController::class, 'create'])->name('create');
             Route::post('/store', [OrdersController::class, 'store'])->name('store');
@@ -143,12 +145,12 @@ Route::middleware(['auth', 'isAdmin'])
 
         // Users
         Route::prefix('users')->name('users.')->group(function () {
-            Route::get('/', [UserController::class, 'index'])->name('index');      // daftar user
-            Route::get('/create', [UserController::class, 'create'])->name('create'); // form tambah
-            Route::post('/store', [UserController::class, 'store'])->name('store');   // simpan data baru
-            Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit'); // form edit
-            Route::put('/{user}', [UserController::class, 'update'])->name('update'); // update data
-            Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy'); // hapus
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::get('/create', [UserController::class, 'create'])->name('create');
+            Route::post('/store', [UserController::class, 'store'])->name('store');
+            Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [UserController::class, 'update'])->name('update');
+            Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
         });
     });
 
@@ -169,6 +171,15 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
 
-// Redirect default
-Route::get('/dashboard', fn() => redirect()->route('admin.dashboard'))
-    ->middleware(['auth', 'isAdmin']);
+// Redirect default dashboard
+Route::get('/dashboard', function () {
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth', 'isAdmin']);
+
+// 🔥 Fix 404 Not Found di halaman utama
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('login');
+});
