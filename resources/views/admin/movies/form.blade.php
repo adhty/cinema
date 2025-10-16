@@ -135,12 +135,12 @@
         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
     @enderror
 
-    <div class="mt-2">
+    <div class="mt-3 flex justify-center">
         <img id="coverPreview" 
              src="{{ isset($movie) && $movie->cover ? asset('storage/'.$movie->cover) : '' }}" 
              alt="Cover Preview" 
-             class="rounded border {{ isset($movie) && $movie->cover ? '' : 'hidden' }}" 
-             style="max-height: 150px;">
+             class="rounded-lg border shadow-md object-cover {{ isset($movie) && $movie->cover ? '' : 'hidden' }}" 
+             style="max-height: 220px; max-width: 160px; aspect-ratio: 2/3;">
     </div>
 </div>
 
