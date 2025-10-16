@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use App\Models\Permission;
+use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
@@ -42,16 +43,19 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        // Logging buat debug
+        \Log::info('Masuk ke store function', $request->all());
+
+        // ✅ FIX: Hapus `$role->id` karena $role belum ada
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
         ]);
 
         // Buat role baru
-        $role = Role::create([
-            'name' => $request->name,
-        ]);
+        $role = Role::create(['name' => $request->name]);
+        \Log::info('Role created', ['id' => $role->id]);
 
-        // Simpan permission tiap menu
+        // Simpan permissions (jika ada)
         if ($request->has('permissions')) {
             foreach ($request->permissions as $menu => $perm) {
                 Permission::create([
@@ -65,6 +69,8 @@ class RoleController extends Controller
                 ]);
             }
         }
+
+        \Log::info('Selesai simpan role');
 
         return redirect()->route('admin.roles.index')->with('success', 'Role berhasil ditambahkan!');
     }
@@ -97,10 +103,17 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
 
+        // ✅ FIX: validasi unique harus abaikan role yang sedang diedit
         $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('roles', 'name')->ignore($role->id),
+            ],
         ]);
 
+        // Update nama role
         $role->update(['name' => $request->name]);
 
         // Hapus permission lama
@@ -129,6 +142,7 @@ class RoleController extends Controller
     public function destroy($id)
     {
         $role = Role::findOrFail($id);
+        $role->permissions()->delete(); // ✅ Tambahkan ini biar relasi permissions juga hilang
         $role->delete();
 
         return redirect()->route('admin.roles.index')->with('success', 'Role berhasil dihapus!');

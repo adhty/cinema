@@ -59,8 +59,8 @@ Route::middleware(['auth', 'isAdmin'])
         // Orders
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [OrdersController::class, 'index'])->name('index');
-            Route::get('/export-excel', [OrderController::class, 'exportExcel'])->name('export.excel');
-            Route::get('/export-pdf', [OrderController::class, 'exportPdf'])->name('export.pdf');
+            Route::get('/export-excel', [OrdersController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export-pdf', [OrdersController::class, 'exportPdf'])->name('export.pdf');
             Route::get('/seats/available', [OrdersController::class, 'availableSeats'])->name('seats.available');
             Route::get('/create', [OrdersController::class, 'create'])->name('create');
             Route::post('/store', [OrdersController::class, 'store'])->name('store');
@@ -69,6 +69,7 @@ Route::middleware(['auth', 'isAdmin'])
             Route::put('/{order}', [OrdersController::class, 'update'])->name('update');
             Route::delete('/{order}', [OrdersController::class, 'destroy'])->name('destroy');
         });
+
 
         // Booking
         Route::prefix('booking')->name('booking.')->group(function () {

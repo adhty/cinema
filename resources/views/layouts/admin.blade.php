@@ -16,7 +16,7 @@
     <div class="flex min-h-screen">
         {{-- Sidebar --}}
         <aside class="w-64 bg-gray-900 text-gray-100 flex-shrink-0 flex flex-col p-5">
-            <h4 class="text-yellow-400 font-bold text-xl text-center mb-8">🎬 Admin Panel</h4>
+            <h4 class="text-yellow-400 font-bold text-xl text-center mb-8">🎬 Admin Cinema</h4>
 
             {{-- Info User --}}
             <div class="bg-gray-800 p-3 rounded-lg mb-6 text-sm">
