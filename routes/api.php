@@ -10,10 +10,16 @@ use App\Http\Controllers\Api\{
     ActorController,
     OrderController,
     SeatController,
-    TicketController
+    TicketController,
+    AuthController
 };
 
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('api')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+
 
     /*
     |--------------------------------------------------------------------------
